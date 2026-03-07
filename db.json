@@ -1,10 +1,75 @@
 
 {
- "filmes":[
-  {"titulo":"Naruto","categoria":"anime"},
-  {"titulo":"One Piece","categoria":"anime"},
-  {"titulo":"Round 6","categoria":"dorama"},
-  {"titulo":"Breaking Bad","categoria":"serie"},
-  {"titulo":"Vingadores Ultimato","categoria":"filme"}
- ]
+  "filmes": [
+    {
+      "id": 1,
+      "titulo": "Naruto",
+      "categoria": "anime",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/9/94/NarutoCoverTankobon1.jpg",
+      "link": "https://www.crunchyroll.com/pt-br/series/GY9PJ5KWR/naruto"
+    },
+    {
+      "id": 2,
+      "titulo": "One Piece",
+      "categoria": "anime",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/9/90/One_Piece%2C_Volume_61_Cover.jpg",
+      "link": "https://www.crunchyroll.com/pt-br/series/GRMG8ZQZR/one-piece"
+    },
+    {
+      "id": 3,
+      "titulo": "Attack on Titan",
+      "categoria": "anime",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/d/d6/Shingeki_no_Kyojin_manga_volume_1.jpg",
+      "link": "https://www.crunchyroll.com/pt-br/series/GR751KNZY/attack-on-titan"
+    },
+    {
+      "id": 4,
+      "titulo": "Demon Slayer",
+      "categoria": "anime",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/0/09/Demon_Slayer_-_Kimetsu_no_Yaiba%2C_volume_1.jpg",
+      "link": "https://www.crunchyroll.com/pt-br/series/GY5P48XEY/demon-slayer-kimetsu-no-yaiba"
+    },
+    {
+      "id": 5,
+      "titulo": "Jujutsu Kaisen",
+      "categoria": "anime",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/4/46/Jujutsu_Kaisen_volume_1.jpg",
+      "link": "https://www.crunchyroll.com/pt-br/series/GRDV0019R/jujutsu-kaisen"
+    },
+    {
+      "id": 6,
+      "titulo": "Round 6",
+      "categoria": "dorama",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/d/dd/Squid_Game_season_1_poster.png",
+      "link": "https://www.netflix.com/title/81040344"
+    },
+    {
+      "id": 7,
+      "titulo": "Breaking Bad",
+      "categoria": "serie",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/6/61/Breaking_Bad_season_1_dvd.jpg",
+      "link": "https://www.netflix.com/title/70143836"
+    },
+    {
+      "id": 8,
+      "titulo": "Vingadores: Ultimato",
+      "categoria": "filme",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg",
+      "link": "https://www.disneyplus.com/pt-br/movies/vingadores-ultimato/5VqLHQ1P2s5F"
+    },
+    {
+      "id": 9,
+      "titulo": "Stranger Things",
+      "categoria": "serie",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/7/78/Stranger_Things_season_1.jpg",
+      "link": "https://www.netflix.com/title/80057281"
+    },
+    {
+      "id": 10,
+      "titulo": "The Boys",
+      "categoria": "serie",
+      "imagem": "https://upload.wikimedia.org/wikipedia/en/5/58/The_Boys_season_1.jpg",
+      "link": "https://www.primevideo.com/detail/0KRGHGZCHKSFZQ3A7Y3H"
+    }
+  ]
 }
