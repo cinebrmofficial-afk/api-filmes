@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f0f0f">
+    <title>CineBMR - Free Movie & Hot TV Series</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f0f;color:#fff;height:100%;overflow-x:hidden}
+        .splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f0f0f 0%,#1a1a2e 100%);display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .5s}
+        .logo-container{text-align:center;animation:pulse 2s infinite}
+        .splash-logo{width:120px;height:120px;margin-bottom:20px;background:linear-gradient(45deg,#00d4ff,#00d084);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:bold}
+        .splash-title{font-size:32px;font-weight:bold;background:linear-gradient(45deg,#00d4ff,#00d084);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+        .splash-subtitle{color:#a0a0a0;font-size:14px}
+        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+        .app-container{min-height:100vh;padding-bottom:80px;display:none}
+        .app-container.active{display:block}
+        .header{position:sticky;top:0;background:#0f0f0f;z-index:100;padding:10px 16px;border-bottom:1px solid #333}
+        .header-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+        .logo-small{width:32px;height:32px;background:linear-gradient(45deg,#00d4ff,#00d084);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px}
+        .search-bar{flex:1;display:flex;background:#242424;border-radius:20px;padding:8px 16px;align-items:center}
+        .search-bar input{flex:1;background:none;border:none;color:#fff;font-size:14px;outline:none}
+        .search-bar input::placeholder{color:#a0a0a0}
+        .search-btn{background:none;border:none;color:#00d084;font-weight:600}
+        .nav-tabs{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none}
+        .nav-tabs::-webkit-scrollbar{display:none}
+        .nav-tab{background:none;border:none;color:#a0a0a0;font-size:14px;padding:8px 0;cursor:pointer;white-space:nowrap;position:relative;font-weight:500}
+        .nav-tab.active{color:#fff;font-weight:600}
+        .nav-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#00d084;border-radius:2px}
+        .main-content{padding:16px}
+        .tab-content{display:none}
+        .tab-content.active{display:block;animation:fadeIn .3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .hero-banner{position:relative;border-radius:16px;overflow:hidden;margin-bottom:24px;aspect-ratio:16/9;background:#1a1a1a}
+        .hero-bg{width:100%;height:100%;object-fit:cover}
+        .hero-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.9))}
+        .hero-title{font-size:20px;margin-bottom:4px}
+        .hero-meta{color:#a0a0a0;font-size:12px;margin-bottom:12px}
+        .play-btn{width:48px;height:48px;border-radius:50%;background:#00d084;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .play-icon{color:white;font-size:20px;margin-left:4px}
+        .content-section{margin-bottom:24px}
+        .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .section-header h3{font-size:18px;font-weight:600}
+        .see-all{color:#a0a0a0;text-decoration:none;font-size:14px}
+        .horizontal-scroll{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:8px}
+        .horizontal-scroll::-webkit-scrollbar{display:none}
+        .movie-card{flex:0 0 auto;width:140px;cursor:pointer}
+        .movie-poster{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:2/3;margin-bottom:8px;background:#1a1a1a}
+        .movie-poster img{width:100%;height:100%;object-fit:cover}
+        .quality-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.8);padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600}
+        .download-icon{position:absolute;bottom:8px;right:8px;width:32px;height:32px;background:#00d084;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:14px}
+        .movie-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .movie-category{font-size:11px;color:#00d084;text-transform:uppercase;margin-top:4px}
+        .loading-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,0.1);border-top:4px solid #00d084;border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .error-message{text-align:center;padding:40px;color:#a0a0a0}
+        .retry-btn{margin-top:16px;padding:10px 20px;background:#00d084;border:none;color:white;border-radius:20px;cursor:pointer}
+        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f0f0f;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:1000}
+        .nav-item{background:none;border:none;color:#a0a0a0;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px}
+        .nav-item.active{color:#00d084}
+        .nav-icon{font-size:20px}
+        .nav-label{font-size:11px}
+        .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10000;display:none;align-items:center;justify-content:center}
+        .modal.active{display:flex}
+        .modal-content{width:100%;height:100%;display:flex;flex-direction:column}
+        .video-player{position:relative;flex:1;display:flex;align-items:center;justify-content:center;background:black;padding:20px}
+        .movie-detail{text-align:center}
+        .movie-detail img{max-width:200px;border-radius:12px;margin-bottom:20px}
+        .movie-detail h2{margin-bottom:10px}
+        .movie-detail p{color:#a0a0a0;margin-bottom:20px}
+        .watch-btn{padding:15px 40px;background:#00d084;border:none;color:white;border-radius:25px;font-size:16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+        .close-modal{position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.2);border:none;color:white;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer}
+        @media(max-width:380px){.movie-card{width:120px}}
+    </style>
+</head>
+<body>
+    <div id="splash" class="splash-screen">
+        <div class="logo-container">
+            <div class="splash-logo">CB</div>
+            <h1 class="splash-title">CineBMR</h1>
+            <p class="splash-subtitle">Free Movies & Series</p>
+        </div>
+    </div>
+    
+    <div id="app" class="app-container">
+        <header class="header">
+            <div class="header-top">
+                <div class="logo-small">CB</div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search movies..." id="searchInput">
+                    <button class="search-btn" onclick="searchMovies()">Search</button>
+                </div>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" onclick="setCategory('all')">Home</button>
+                <button class="nav-tab" onclick="setCategory('anime')">Anime</button>
+                <button class="nav-tab" onclick="setCategory('serie')">Series</button>
+                <button class="nav-tab" onclick="setCategory('filme')">Movies</button>
+                <button class="nav-tab" onclick="setCategory('dorama')">Dorama</button>
+            </nav>
+        </header>
+        
+        <main class="main-content">
+            <div id="home" class="tab-content active">
+                <div class="hero-banner" id="heroBanner" onclick="playHero()">
+                    <img src="" alt="Featured" class="hero-bg" id="heroImage">
+                    <div class="hero-overlay">
+                        <h2 class="hero-title" id="heroTitle">Loading...</h2>
+                        <p class="hero-meta" id="heroMeta">Loading...</p>
+                        <button class="play-btn">
+                            <span class="play-icon">▶</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <section class="content-section">
+                    <div class="section-header">
+                        <h3>🔥 All Content</h3>
+                    </div>
+                    <div class="horizontal-scroll" id="allMovies">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </section>
+                
+                <section class="content-section" id="animeSection">
+                    <div class="section-header">
+                        <h3>🎌 Animes</h3>
+                    </div>
+                    <div class="horizontal-scroll" id="animeMovies"></div>
+                </section>
+                
+                <section class="content-section" id="seriesSection">
+                    <div class="section-header">
+                        <h3>📺 Series</h3>
+                    </div>
+                    <div class="horizontal-scroll" id="seriesMovies"></div>
+                </section>
+            </div>
+        </main>
+        
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('home')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Home</span>
+            </button>
+            <button class="nav-item">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Search</span>
+            </button>
+            <button class="nav-item">
+                <span class="nav-icon">💾</span>
+                <span class="nav-label">Saved</span>
+            </button>
+            <button class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Profile</span>
+            </button>
+        </nav>
+        
+        <div id="playerModal" class="modal">
+            <div class="modal-content">
+                <button class="close-modal" onclick="closePlayer()">✕</button>
+                <div class="video-player">
+                    <div class="movie-detail">
+                        <img id="modalImage" src="" alt="">
+                        <h2 id="modalTitle">Title</h2>
+                        <p id="modalCategory">Category</p>
+                        <a id="modalLink" href="#" target="_blank" class="watch-btn">▶ Watch Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // SUA API DO GITHUB - JÁ CONFIGURADA!
+        // ============================================
+        const API_URL = 'https://my-json-server.typicode.com/cinebrmofficial-afk/api-filmes/filmes';
+        
+        let allMovies = [];
+        let heroMovie = null;
+        
+        // Splash screen
+        setTimeout(() => {
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('app').classList.add('active');
+            }, 500);
+        }, 2500);
+        
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.nav-item').classList.add('active');
+        }
+        
+        // Category switching
+        function setCategory(category) {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (category === 'all') {
+                renderMovies('allMovies', allMovies);
+            } else {
+                const filtered = allMovies.filter(m => m.categoria === category);
+                renderMovies('allMovies', filtered);
+            }
+        }
+        
+        // Fetch movies from YOUR API
+        async function loadMovies() {
+            try {
+                const response = await fetch(API_URL);
+                allMovies = await response.json();
+                
+                // Set hero (first movie)
+                if (allMovies.length > 0) {
+                    heroMovie = allMovies[0];
+                    document.getElementById('heroImage').src = heroMovie.imagem;
+                    document.getElementById('heroTitle').textContent = heroMovie.titulo;
+                    document.getElementById('heroMeta').textContent = heroMovie.categoria.toUpperCase();
+                }
+                
+                // Render sections
+                renderMovies('allMovies', allMovies);
+                renderMovies('animeMovies', allMovies.filter(m => m.categoria === 'anime'));
+                renderMovies('seriesMovies', allMovies.filter(m => m.categoria === 'serie'));
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('allMovies').innerHTML = 
+                    '<div class="error-message">Failed to load movies<br><button class="retry-btn" onclick="loadMovies()">Retry</button></div>';
+            }
+        }
+        
+        // Render movie cards
+        function renderMovies(containerId, movies) {
+            const container = document.getElementById(containerId);
+            
+            if (movies.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#a0a0a0">No movies found</div>';
+                return;
+            }
+            
+            container.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="openPlayer('${movie.titulo}', '${movie.categoria}', '${movie.imagem}', '${movie.link}')">
+                    <div class="movie-poster">
+                        <img src="${movie.imagem}" alt="${movie.titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/00d084?text=${encodeURIComponent(movie.titulo)}'">
+                        <span class="quality-badge">HD</span>
+                    </div>
+                    <div class="movie-title">${movie.titulo}</div>
+                    <div class="movie-category">${movie.categoria}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Search movies
+        function searchMovies() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) {
+                renderMovies('allMovies', allMovies);
+                return;
+            }
+            
+            const filtered = allMovies.filter(m => 
+                m.titulo.toLowerCase().includes(query) || 
+                m.categoria.toLowerCase().includes(query)
+            );
+            renderMovies('allMovies', filtered);
+        }
+        
+        // Player functions
+        function openPlayer(title, category, image, link) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalCategory').textContent = category.toUpperCase();
+            document.getElementById('modalImage').src = image;
+            document.getElementById('modalLink').href = link;
+            document.getElementById('playerModal').classList.add('active');
+        }
+        
+        function closePlayer() {
+            document.getElementById('playerModal').classList.remove('active');
+        }
+        
+        function playHero() {
+            if (heroMovie) {
+                openPlayer(heroMovie.titulo, heroMovie.categoria, heroMovie.imagem, heroMovie.link);
+            }
+        }
+        
+        // Close modal on outside click
+        document.getElementById('playerModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closePlayer();
+            }
+        });
+        
+        // Enter key for search
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchMovies();
+        });
+        
+        // Initialize
+        loadMovies();
+    </script>
+</body>
+</html>
