@@ -1,1 +1,10 @@
 
+{
+ "filmes":[
+  {"titulo":"Naruto","categoria":"anime"},
+  {"titulo":"One Piece","categoria":"anime"},
+  {"titulo":"Round 6","categoria":"dorama"},
+  {"titulo":"Breaking Bad","categoria":"serie"},
+  {"titulo":"Vingadores Ultimato","categoria":"filme"}
+ ]
+}
