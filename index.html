@@ -3,70 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CineBMR - Oficial</title>
+    <title>CineBMR - Ultra</title>
     <style>
-        :root { --main-color: #00d4ff; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; }
-        * { margin:0; padding:0; box-sizing:border-box; outline: none; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: #fff; line-height: 1.5; }
-        
-        /* HEADER PREMIUM */
-        .header { position: sticky; top: 0; z-index: 1000; background: rgba(15,15,15,0.98); padding: 15px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; }
-        .logo { width: 40px; height: 40px; background: url('logo.jpg') no-repeat center; background-size: cover; border-radius: 10px; border: 2px solid var(--main-color); box-shadow: 0 0 15px rgba(0, 212, 255, 0.4); }
-        .search-box { flex: 1; background: #242424; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; height: 45px; border: 1px solid transparent; transition: 0.3s; }
-        .search-box:focus-within { border-color: var(--main-color); background: #2a2a2a; }
+        :root { --main-color: #00d4ff; --bg-dark: #080808; --card-bg: #111; }
+        * { margin:0; padding:0; box-sizing:border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: #fff; overflow-x: hidden; }
+
+        /* HEADER & SEARCH */
+        .header { position: sticky; top: 0; z-index: 1000; background: rgba(8,8,8,0.95); padding: 15px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px); }
+        .logo { width: 45px; height: 45px; background: var(--main-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.3); }
+        .search-box { flex: 1; background: #1a1a1a; border-radius: 15px; display: flex; align-items: center; padding: 0 15px; height: 45px; border: 1px solid #333; }
         .search-box input { background: none; border: none; color: #fff; width: 100%; font-size: 14px; margin-left: 10px; }
 
-        /* GRID RESPONSIVO */
-        .container { padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
-        
-        /* CARDS ESTILO NETFLIX */
-        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease; position: relative; border: 1px solid #222; }
-        .card:hover { transform: translateY(-5px); border-color: var(--main-color); }
-        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #222; }
-        .card-title { padding: 8px; font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(to top, #000, transparent); }
+        /* CATEGORIAS */
+        .categorias-bar { display: flex; overflow-x: auto; padding: 10px 15px; gap: 10px; scrollbar-width: none; }
+        .categorias-bar::-webkit-scrollbar { display: none; }
+        .cat-item { background: #1a1a1a; padding: 8px 18px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #666; border: 1px solid #222; cursor: pointer; white-space: nowrap; }
+        .cat-item.active { background: var(--main-color); color: #000; border-color: var(--main-color); }
 
-        /* PLAYER MODAL */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(5px); }
+        /* CONTAINER */
+        .container { padding: 10px 15px 100px 15px; }
+        .section-title { margin: 15px 0; font-size: 18px; color: var(--main-color); display: flex; align-items: center; gap: 8px; }
+
+        /* GRID */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 12px; }
+
+        /* CARDS PREMIUM */
+        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; border: 1px solid #222; position: relative; }
+        .card:active { transform: scale(0.95); }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .card-title { padding: 8px; font-size: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; }
+        .badge { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 9px; color: var(--main-color); border: 1px solid var(--main-color); }
+
+        /* MODAL & PLAYER */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; z-index: 2000; }
         .modal.active { display: flex; }
-        .modal-content { width: 90%; max-width: 400px; background: #1a1a1a; padding: 25px; border-radius: 25px; text-align: center; border: 1px solid #333; }
-        .modal-content img { width: 100%; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn-play { display: block; background: var(--main-color); color: #fff; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 18px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3); }
-        .btn-play:hover { transform: scale(1.05); filter: brightness(1.1); }
-        
-        /* FOOTER NAV */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; z-index: 1000; }
-        .nav-item { color: #666; font-size: 10px; font-weight: bold; text-align: center; }
+        .modal-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .player-container { flex: 1; display: flex; align-items: center; justify-content: center; background: #000; }
+        iframe { width: 100%; height: 100%; border: none; }
+        .btn-fav { background: #222; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px solid #333; font-weight: bold; }
+        .btn-fav.active { background: #ff4444; border-color: #ff4444; }
+
+        /* NAV BAR */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: rgba(10,10,10,0.98); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #222; z-index: 1000; backdrop-filter: blur(10px); }
+        .nav-item { color: #555; font-size: 11px; cursor: pointer; text-align: center; transition: 0.3s; }
+        .nav-item i { display: block; font-size: 18px; margin-bottom: 4px; }
         .nav-item.active { color: var(--main-color); }
+
+        /* MENSAGEM VAZIA */
+        .empty-msg { text-align: center; padding: 40px; color: #444; }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <div class="logo"></div>
+        <div class="logo">BMR</div>
         <div class="search-box">
-            <input type="text" id="search" placeholder="O que vamos assistir hoje?" oninput="buscar()">
+            <input type="text" id="search" placeholder="Filmes, séries ou animes..." oninput="buscar()">
         </div>
     </header>
 
+    <div class="categorias-bar">
+        <div class="cat-item active" onclick="filtrarGenero('', this)">Tudo</div>
+        <div class="cat-item" onclick="filtrarGenero('28', this)">Ação</div>
+        <div class="cat-item" onclick="filtrarGenero('35', this)">Comédia</div>
+        <div class="cat-item" onclick="filtrarGenero('27', this)">Terror</div>
+        <div class="cat-item" onclick="filtrarGenero('10749', this)">Romance</div>
+        <div class="cat-item" onclick="filtrarGenero('878', this)">Ficção</div>
+        <div class="cat-item" onclick="filtrarGenero('16', this)">Animes</div>
+    </div>
+
     <div class="container">
-        <h2 style="margin-bottom: 20px; font-size: 18px; color: var(--main-color)">🔥 Filmes em Alta</h2>
+        <h2 id="sessao-titulo" class="section-title">🔥 Tendências</h2>
         <div id="lista" class="grid"></div>
     </div>
 
     <nav class="nav-bar">
-        <div class="nav-item active">INÍCIO</div>
-        <div class="nav-item">SÉRIES</div>
-        <div class="nav-item">PREMIUM</div>
-        <div class="nav-item">PERFIL</div>
+        <div id="nav-movie" class="nav-item active" onclick="mudarTipo('movie')">FILMES</div>
+        <div id="nav-tv" class="nav-item" onclick="mudarTipo('tv')">SÉRIES</div>
+        <div id="nav-fav" class="nav-item" onclick="exibirFavoritos()">LISTA</div>
+        <div class="nav-item" onclick="carregarLancamentos()">BREVE</div>
     </nav>
 
     <div id="modal" class="modal">
-        <div class="modal-content">
-            <img id="mImg" src="">
-            <h2 id="mTitle" style="margin-bottom: 20px; font-size: 20px"></h2>
-            <a id="mLink" href="#" target="_blank" class="btn-play">ASSISTIR AGORA</a>
-            <p onclick="fechar()" style="color: #888; margin-top: 20px; cursor: pointer; font-weight: bold">FECHAR</p>
+        <div class="modal-header">
+            <span id="mTitle" style="font-weight: bold; font-size: 14px;">Título do Filme</span>
+            <button onclick="fechar()" style="background:none; border:none; color:#ff4444; font-weight:bold; font-size:20px;">×</button>
+        </div>
+        <div class="player-container" id="playerArea">
+            </div>
+        <div style="padding: 15px; display: flex; gap: 10px; justify-content: center; background: #111;">
+            <button id="btnFavoritar" class="btn-fav">❤ SALVAR NA LISTA</button>
         </div>
     </div>
 
@@ -74,42 +101,114 @@
         const API_KEY = '5799262499f305123f69c419c2a131e6'; 
         const IMG_URL = 'https://image.tmdb.org/t/p/w500';
         let db = [];
+        let tipoAtual = 'movie';
+        let favoritos = JSON.parse(localStorage.getItem('bmr_favs')) || [];
 
-        async function carregar() {
-            try {
-                // Puxa as 3 primeiras páginas (60 filmes) de uma vez
-                for(let p=1; p<=3; p++) {
-                    const r = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR&page=${p}`);
-                    const data = await r.json();
-                    db = [...db, ...data.results];
-                }
-                render(db);
-            } catch (e) { document.getElementById('lista').innerHTML = "Erro ao carregar catálogo."; }
+        // Inicia o App
+        async function carregar(tipo = 'movie') {
+            tipoAtual = tipo;
+            document.getElementById('sessao-titulo').innerText = tipo === 'movie' ? "🔥 Filmes em Alta" : "📺 Séries em Alta";
+            const r = await fetch(`https://api.themoviedb.org/3/${tipo}/popular?api_key=${API_KEY}&language=pt-BR&page=1`);
+            const data = await r.json();
+            db = data.results.map(item => ({...item, media_type: tipo}));
+            render(db);
+        }
+
+        function mudarTipo(tipo) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + tipo).classList.add('active');
+            carregar(tipo);
+        }
+
+        async function carregarLancamentos() {
+            document.getElementById('sessao-titulo').innerText = "📅 Em Breve nos Cinemas";
+            const r = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}&language=pt-BR&region=BR`);
+            const data = await r.json();
+            render(data.results.map(i => ({...i, media_type: 'movie'})));
         }
 
         function render(dados) {
-            document.getElementById('lista').innerHTML = dados.map(m => `
-                <div class="card" onclick="abrir('${m.title.replace(/'/g, "")}', '${IMG_URL + m.poster_path}', 'https://embed.warezcdn.com/filme/${m.id}')">
-                    <img src="${m.poster_path ? IMG_URL + m.poster_path : ''}" loading="lazy">
-                    <div class="card-title">${m.title}</div>
-                </div>
-            `).join('');
+            const lista = document.getElementById('lista');
+            if (dados.length === 0) {
+                lista.innerHTML = '<div class="empty-msg">Nenhum item encontrado.</div>';
+                return;
+            }
+            lista.innerHTML = dados.map(m => {
+                const titulo = m.title || m.name;
+                const tipo = m.media_type || (tipoAtual);
+                const nota = m.vote_average ? m.vote_average.toFixed(1) : 'N/A';
+                
+                return `
+                <div class="card" onclick="abrirPlayer('${m.id}', '${tipo}', '${titulo.replace(/'/g, "")}')">
+                    <div class="badge">★ ${nota}</div>
+                    <img src="${m.poster_path ? IMG_URL + m.poster_path : 'https://via.placeholder.com/500x750?text=Sem+Poster'}" loading="lazy">
+                    <div class="card-title">${titulo}</div>
+                </div>`;
+            }).join('');
         }
 
-        function buscar() {
-            let q = document.getElementById('search').value.toLowerCase();
-            render(db.filter(m => m.title.toLowerCase().includes(q)));
+        async function buscar() {
+            let q = document.getElementById('search').value;
+            if(q.length > 2) {
+                const r = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=pt-BR&query=${q}`);
+                const data = await r.json();
+                render(data.results.filter(i => i.poster_path));
+            } else if(q.length === 0) render(db);
         }
 
-        function abrir(t, img, l) {
-            document.getElementById('mTitle').innerText = t;
-            document.getElementById('mImg').src = img;
-            document.getElementById('mLink').href = l;
+        async function filtrarGenero(id, elemento) {
+            document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+            elemento.classList.add('active');
+            if(id === '') { carregar(tipoAtual); return; }
+            const r = await fetch(`https://api.themoviedb.org/3/discover/${tipoAtual}?api_key=${API_KEY}&language=pt-BR&with_genres=${id}`);
+            const data = await r.json();
+            render(data.results.map(i => ({...i, media_type: tipoAtual})));
+        }
+
+        // FUNÇÃO DO PLAYER E FAVORITOS
+        function abrirPlayer(id, tipo, titulo) {
+            const tipoLink = tipo === 'tv' || tipo === 'serie' ? 'serie' : 'filme';
+            const url = `https://embed.warezcdn.com/${tipoLink}/${id}`;
+            
+            document.getElementById('mTitle').innerText = titulo;
+            document.getElementById('playerArea').innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
             document.getElementById('modal').classList.add('active');
+
+            // Lógica de Favoritos
+            const btn = document.getElementById('btnFavoritar');
+            const isFav = favoritos.some(f => f.id == id);
+            
+            btn.className = isFav ? 'btn-fav active' : 'btn-fav';
+            btn.innerText = isFav ? '❤ REMOVER DA LISTA' : '❤ SALVAR NA LISTA';
+            
+            btn.onclick = () => toggleFavorito({id, tipo, titulo, poster_path: db.find(x => x.id == id)?.poster_path});
         }
 
-        function fechar() { document.getElementById('modal').classList.remove('active'); }
-        carregar();
+        function toggleFavorito(obj) {
+            const index = favoritos.findIndex(f => f.id == obj.id);
+            if (index > -1) {
+                favoritos.splice(index, 1);
+            } else {
+                favoritos.push(obj);
+            }
+            localStorage.setItem('bmr_favs', JSON.stringify(favoritos));
+            fechar();
+            if(document.getElementById('nav-fav').classList.contains('active')) exibirFavoritos();
+        }
+
+        function exibirFavoritos() {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-fav').classList.add('active');
+            document.getElementById('sessao-titulo').innerText = "❤ Minha Lista";
+            render(favoritos);
+        }
+
+        function fechar() { 
+            document.getElementById('modal').classList.remove('active'); 
+            document.getElementById('playerArea').innerHTML = ''; // Para o som do filme
+        }
+        
+        carregar('movie');
     </script>
 </body>
 </html>
