@@ -3,89 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f0f0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>CineBMR - Oficial</title>
     <style>
+        /* RESET E CORES */
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:sans-serif;background:#0f0f0f;color:#fff;padding-bottom:80px}
-        .header{position:sticky;top:0;z-index:100;background:#0f0f0f;padding:15px;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
-        .logo{background:linear-gradient(45deg,#00d4ff,#00d084);padding:8px;border-radius:8px;font-weight:bold}
-        .search-bar{flex:1;background:#242424;border-radius:20px;padding:8px 15px}
-        .search-bar input{background:none;border:none;color:#fff;width:100%;outline:none}
-        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:15px;padding:15px}
-        .card{background:#1a1a1a;border-radius:12px;overflow:hidden;cursor:pointer;transition:0.3s}
-        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
-        .card-info{padding:8px;font-size:12px;text-align:center;min-height:45px;display:flex;align-items:center;justify-content:center}
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:1000}
+        body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:#0f0f0f;color:#fff;overflow-x:hidden}
+        .app{max-width:412px;margin:auto;min-height:100vh;padding-bottom:80px}
+
+        /* HEADER */
+        .header{height:70px;display:flex;align-items:center;gap:12px;padding:0 16px;position:sticky;top:0;background:rgba(15,15,15,0.95);z-index:1000;border-bottom:1px solid #222}
+        .logo{width:35px;height:35px;background:url('logo.jpg') no-repeat center;background-size:cover;border-radius:8px;border:1.5px solid #2ecc71;box-shadow:0 0 10px rgba(46,204,113,0.3)}
+        .search-container{flex:1;position:relative}
+        .search-bar{width:100%;height:40px;background:#242424;border-radius:20px;border:none;padding:0 15px;color:#fff;outline:none;font-size:14px}
+
+        /* CATEGORIAS */
+        .categories{display:flex;gap:20px;padding:15px 16px;overflow-x:auto;scrollbar-width:none}
+        .categories::-webkit-scrollbar{display:none}
+        .categories span{font-size:14px;white-space:nowrap;color:#888;cursor:pointer;font-weight:600}
+        .categories span.active{color:#2ecc71;border-bottom:2px solid #2ecc71;padding-bottom:4px}
+
+        /* BANNER */
+        .banner{height:180px;margin:16px;border-radius:15px;background:linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://image.tmdb.org/t/p/w500/t5zCBS9InllSfwGp977vmoarS6z.jpg') center;background-size:cover;display:flex;align-items:flex-end;padding:16px;border:1px solid #333}
+
+        /* GRID DE FILMES */
+        .section-title{padding:10px 16px;font-size:18px;font-weight:bold}
+        .grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;padding:15px}
+        .card{background:#1a1a1a;border-radius:10px;overflow:hidden;cursor:pointer;transition:transform 0.2s}
+        .card:active{transform:scale(0.95)}
+        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:#333}
+        .card-info{padding:6px;font-size:11px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        /* MODAL PLAYER */
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:2000}
         .modal.active{display:flex}
-        .modal-content{width:90%;max-width:400px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center}
-        .watch-btn{display:block;background:#00d084;color:#fff;padding:15px;border-radius:10px;text-decoration:none;margin-top:15px;font-weight:bold;font-size:18px}
+        .modal-content{width:85%;max-width:350px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center;border:1px solid #333}
+        .modal-content img{width:100%;border-radius:12px;margin-bottom:15px;box-shadow:0 5px 15px rgba(0,0,0,0.5)}
+        .watch-btn{display:block;background:#2ecc71;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:16px;box-shadow:0 4px 12px rgba(46,204,113,0.3)}
+
+        /* NAV INFERIOR */
+        .bottom-nav{position:fixed;bottom:0;width:100%;max-width:412px;height:70px;background:#111;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #222;z-index:1000}
+        .nav-item{text-align:center;font-size:10px;color:#666;font-weight:bold}
+        .nav-item.active{color:#2ecc71}
+        .nav-icon{width:22px;height:22px;background:#333;margin:0 auto 4px;border-radius:6px}
+        .nav-item.active .nav-icon{background:#2ecc71;box-shadow:0 0 10px rgba(46,204,113,0.3)}
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo">CB</div>
-        <div class="search-bar"><input type="text" id="search" placeholder="Buscar filmes..." oninput="buscar()"></div>
-    </header>
-    
-    <div id="lista" class="grid"></div>
 
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <img id="mImg" style="width:100%;border-radius:10px">
-            <h2 id="mTitle" style="margin:15px 0;font-size:20px"></h2>
-            <a id="mLink" href="#" target="_blank" class="watch-btn">▶ ASSISTIR AGORA</a>
-            <button onclick="fechar()" style="background:none;border:none;color:#aaa;margin-top:20px;cursor:pointer">FECHAR</button>
+<div class="app">
+    <header class="header">
+        <div class="logo"></div>
+        <div class="search-container">
+            <input type="text" class="search-bar" id="search" placeholder="Buscar filmes..." oninput="buscar()">
+        </div>
+    </header>
+
+    <div class="categories">
+        <span class="active">Trending</span>
+        <span>Ação</span>
+        <span>Terror</span>
+        <span>Séries</span>
+    </div>
+
+    <div class="banner">
+        <div>
+            <h3 style="margin:0">Deadpool & Wolverine</h3>
+            <p style="margin:4px 0 0; font-size:12px; color:#2ecc71; font-weight:bold">EM ALTA AGORA</p>
         </div>
     </div>
 
-    <script>
-        const API_KEY = '5799262499f305123f69c419c2a131e6'; 
-        const BASE_URL = 'https://api.themoviedb.org/3';
-        const IMG_URL = 'https://image.tmdb.org/t/p/w500';
-        let db = [];
+    <div class="section-title" id="sec-title">Filmes Populares</div>
+    <div id="lista" class="grid"></div>
 
-        async function carregar() {
-            try {
-                // Puxa as primeiras 20 páginas de filmes populares (aprox. 400 filmes)
-                for (let i = 1; i <= 20; i++) {
-                    const r = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR&page=${i}`);
-                    const data = await r.json();
-                    const novos = data.results.map(m => ({
-                        titulo: m.title,
-                        imagem: m.poster_path ? IMG_URL + m.poster_path : 'https://via.placeholder.com/500x750?text=Sem+Capa',
-                        link: `https://embed.warezcdn.com/filme/${m.id}`
-                    }));
-                    db = [...db, ...novos];
-                }
-                render(db);
-            } catch (e) { 
-                document.getElementById('lista').innerHTML = '<p>Erro ao carregar catálogo.</p>';
+    <nav class="bottom-nav">
+        <div class="nav-item active"><div class="nav-icon"></div>HOME</div>
+        <div class="nav-item"><div class="nav-icon"></div>PREMIUM</div>
+        <div class="nav-item"><div class="nav-icon"></div>DOWNLOADS</div>
+        <div class="nav-item"><div class="nav-icon"></div>PERFIL</div>
+    </nav>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <img id="mImg" src="">
+        <h2 id="mTitle" style="font-size:18px; margin-bottom:15px"></h2>
+        <a id="mLink" href="#" target="_blank" class="watch-btn">▶ ASSISTIR AGORA</a>
+        <button onclick="fechar()" style="background:none; border:none; color:#888; margin-top:20px; font-weight:bold; cursor:pointer">VOLTAR</button>
+    </div>
+</div>
+
+<script>
+    const API_KEY = '5799262499f305123f69c419c2a131e6'; 
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+    let db = [];
+
+    async function carregar() {
+        try {
+            // Carrega 10 páginas (200 filmes) para o site ficar leve e rápido
+            for (let i = 1; i <= 10; i++) {
+                const r = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=pt-BR&page=${i}`);
+                const data = await r.json();
+                const novos = data.results.map(m => ({
+                    id: m.id,
+                    titulo: m.title,
+                    imagem: m.poster_path ? IMG_URL + m.poster_path : 'https://via.placeholder.com/500x750?text=Sem+Capa',
+                    link: `https://embed.warezcdn.com/filme/${m.id}`
+                }));
+                db = [...db, ...novos];
             }
+            render(db);
+        } catch (e) { 
+            document.getElementById('lista').innerHTML = '<p style="grid-column: 1/-1; text-align:center">Erro ao conectar.</p>';
         }
+    }
 
-        function render(dados) {
-            document.getElementById('lista').innerHTML = dados.map(m => `
-                <div class="card" onclick="abrir('${m.titulo.replace(/'/g, "\\'")}','${m.imagem}','${m.link}')">
-                    <img src="${m.imagem}" loading="lazy">
-                    <div class="card-info">${m.titulo}</div>
-                </div>
-            `).join('');
-        }
+    function render(dados) {
+        document.getElementById('lista').innerHTML = dados.map(m => `
+            <div class="card" onclick="abrir('${m.titulo.replace(/'/g, "\\'")}','${m.imagem}','${m.link}')">
+                <img src="${m.imagem}" loading="lazy">
+                <div class="card-info">${m.titulo}</div>
+            </div>
+        `).join('');
+    }
 
-        function buscar() {
-            let q = document.getElementById('search').value.toLowerCase();
-            render(db.filter(m => m.titulo.toLowerCase().includes(q)));
-        }
+    function buscar() {
+        let q = document.getElementById('search').value.toLowerCase();
+        const filtrados = db.filter(m => m.titulo.toLowerCase().includes(q));
+        render(filtrados);
+        document.getElementById('sec-title').innerText = q ? `Resultados: ${q}` : "Filmes Populares";
+    }
 
-        function abrir(t, img, l) {
-            document.getElementById('mTitle').innerText = t;
-            document.getElementById('mImg').src = img;
-            document.getElementById('mLink').href = l;
-            document.getElementById('modal').classList.add('active');
-        }
+    function abrir(t, img, l) {
+        document.getElementById('mTitle').innerText = t;
+        document.getElementById('mImg').src = img;
+        document.getElementById('mLink').href = l;
+        document.getElementById('modal').classList.add('active');
+    }
 
-        function fechar() { document.getElementById('modal').classList.remove('active'); }
-        carregar();
-    </script>
+    function fechar() { document.getElementById('modal').classList.remove('active'); }
+
+    // Iniciar site
+    carregar();
+</script>
+
 </body>
 </html>
