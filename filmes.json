@@ -1,0 +1,14 @@
+[
+  {
+    "titulo": "Deadpool & Wolverine",
+    "categoria": "filme",
+    "imagem": "https://image.tmdb.org/t/p/w500/86v9S99p9u6P6Rfs9L8Z99S99S9.jpg",
+    "link": "https://embed.warezcdn.com/filme/tt6263850"
+  },
+  {
+    "titulo": "Solo Leveling",
+    "categoria": "anime",
+    "imagem": "https://image.tmdb.org/t/p/w500/geCR7mS7vPhP47v91N9C936GPba.jpg",
+    "link": "https://embed.warezcdn.com/serie/tt10586834"
+  }
+]
