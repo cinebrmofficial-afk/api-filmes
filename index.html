@@ -3,110 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f0f0f">
     <title>CineBMR - Oficial</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:sans-serif;background:#0f0f0f;color:#fff;overflow-x:hidden}
-        .app{max-width:412px;margin:auto;min-height:100vh;padding-bottom:80px}
-
-        /* HEADER */
-        .header{height:70px;display:flex;align-items:center;gap:12px;padding:0 16px;position:sticky;top:0;background:rgba(15,15,15,0.95);z-index:1000;border-bottom:1px solid #222}
-        .logo{width:35px;height:35px;background:url('logo.jpg') no-repeat center;background-size:cover;border-radius:8px;border:1.5px solid #2ecc71;box-shadow:0 0 10px rgba(46, 204, 113, 0.3)}
-        .search-bar{flex:1;height:40px;background:#242424;border-radius:20px;border:none;padding:0 15px;color:#fff;outline:none}
-
-        /* BANNER */
-        .banner{height:180px;margin:16px;border-radius:15px;background:linear-gradient(to top, rgba(0,0,0,0.9), transparent), url('https://image.tmdb.org/t/p/w500/t5zCBS9InllSfwGp977vmoarS6z.jpg') center;background-size:cover;display:flex;align-items:flex-end;padding:16px;border:1px solid #333}
-
-        /* GRID DE FILMES */
-        .grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;padding:15px}
-        .card{background:#1a1a1a;border-radius:10px;overflow:hidden;cursor:pointer}
+        body{font-family:sans-serif;background:#0f0f0f;color:#fff;padding-bottom:80px}
+        .header{position:sticky;top:0;z-index:100;background:#0f0f0f;padding:15px;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
+        .logo{width:35px;height:35px;background:url('logo.jpg') no-repeat center;background-size:cover;border-radius:8px;border:1.5px solid #2ecc71}
+        .search-bar{flex:1;background:#242424;border-radius:20px;padding:8px 15px}
+        .search-bar input{background:none;border:none;color:#fff;width:100%;outline:none}
+        .grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;padding:10px}
+        .card{background:#1a1a1a;border-radius:8px;overflow:hidden;cursor:pointer}
         .card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
-        .card-info{padding:6px;font-size:11px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-        /* MODAL */
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:2000}
+        .card-info{padding:5px;font-size:10px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:1000}
         .modal.active{display:flex}
-        .modal-content{width:85%;max-width:350px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center}
-        .watch-btn{display:block;background:#2ecc71;color:#fff;padding:14px;border-radius:10px;text-decoration:none;font-weight:bold;margin-top:15px}
-
-        /* NAV INFERIOR */
-        .bottom-nav{position:fixed;bottom:0;width:100%;max-width:412px;height:70px;background:#111;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #222}
-        .nav-item{text-align:center;font-size:10px;color:#666}
-        .nav-item.active{color:#2ecc71}
+        .modal-content{width:90%;max-width:350px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center}
+        .watch-btn{display:block;background:#2ecc71;color:#fff;padding:15px;border-radius:10px;text-decoration:none;margin-top:15px;font-weight:bold}
     </style>
 </head>
 <body>
-
-<div class="app">
     <header class="header">
         <div class="logo"></div>
-        <input type="text" class="search-bar" id="search" placeholder="Buscar filmes..." oninput="buscar()">
+        <div class="search-bar"><input type="text" id="search" placeholder="Buscar..." oninput="buscar()"></div>
     </header>
-
-    <div class="banner">
-        <div><h3 style="margin:0">Destaques</h3><p style="margin:4px 0 0; font-size:12px; color:#2ecc71">CineBMR Oficial</p></div>
-    </div>
-
     <div id="lista" class="grid"></div>
-
-    <nav class="bottom-nav">
-        <div class="nav-item active">HOME</div>
-        <div class="nav-item">PREMIUM</div>
-        <div class="nav-item">ME</div>
-    </nav>
-</div>
-
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <img id="mImg" style="width:100%; border-radius:12px">
-        <h2 id="mTitle" style="margin:15px 0; font-size:18px"></h2>
-        <a id="mLink" href="#" target="_blank" class="watch-btn">▶ ASSISTIR AGORA</a>
-        <button onclick="fechar()" style="background:none; border:none; color:#888; margin-top:20px">VOLTAR</button>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <img id="mImg" style="width:100%;border-radius:10px">
+            <h2 id="mTitle" style="margin:15px 0;font-size:18px"></h2>
+            <a id="mLink" href="#" target="_blank" class="watch-btn">▶ ASSISTIR AGORA</a>
+            <button onclick="fechar()" style="background:none;border:none;color:#aaa;margin-top:20px">FECHAR</button>
+        </div>
     </div>
-</div>
-
-<script>
-    const API_KEY = '5799262499f305123f69c419c2a131e6'; 
-    const IMG_URL = 'https://image.tmdb.org/t/p/w500';
-    let db = [];
-
-    async function carregar() {
-        try {
-            const r = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR&page=1`);
-            const data = await r.json();
-            db = data.results.map(m => ({
-                titulo: m.title,
-                imagem: IMG_URL + m.poster_path,
-                link: `https://embed.warezcdn.com/filme/${m.id}`
-            }));
-            render(db);
-        } catch (e) { console.error("Erro"); }
-    }
-
-    function render(dados) {
-        document.getElementById('lista').innerHTML = dados.map(m => `
-            <div class="card" onclick="abrir('${m.titulo.replace(/'/g, "")}','${m.imagem}','${m.link}')">
-                <img src="${m.imagem}" loading="lazy">
-                <div class="card-info">${m.titulo}</div>
-            </div>
-        `).join('');
-    }
-
-    function buscar() {
-        let q = document.getElementById('search').value.toLowerCase();
-        render(db.filter(m => m.titulo.toLowerCase().includes(q)));
-    }
-
-    function abrir(t, img, l) {
-        document.getElementById('mTitle').innerText = t;
-        document.getElementById('mImg').src = img;
-        document.getElementById('mLink').href = l;
-        document.getElementById('modal').classList.add('active');
-    }
-
-    function fechar() { document.getElementById('modal').classList.remove('active'); }
-    carregar();
-</script>
+    <script>
+        const API_KEY = '5799262499f305123f69c419c2a131e6'; 
+        const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+        let db = [];
+        async function carregar() {
+            try {
+                const r = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR&page=1`);
+                const data = await r.json();
+                db = data.results.map(m => ({
+                    t: m.title,
+                    i: IMG_URL + m.poster_path,
+                    l: `https://embed.warezcdn.com/filme/${m.id}`
+                }));
+                render(db);
+            } catch (e) { document.getElementById('lista').innerHTML = 'Erro de conexão.'; }
+        }
+        function render(d) {
+            document.getElementById('lista').innerHTML = d.map(m => `
+                <div class="card" onclick="abrir('${m.t.replace(/'/g, "")}','${m.i}','${m.l}')">
+                    <img src="${m.i}" loading="lazy">
+                    <div class="card-info">${m.t}</div>
+                </div>
+            `).join('');
+        }
+        function buscar() {
+            let q = document.getElementById('search').value.toLowerCase();
+            render(db.filter(m => m.t.toLowerCase().includes(q)));
+        }
+        function abrir(t,i,l) {
+            document.getElementById('mTitle').innerText = t;
+            document.getElementById('mImg').src = i;
+            document.getElementById('mLink').href = l;
+            document.getElementById('modal').classList.add('active');
+        }
+        function fechar() { document.getElementById('modal').classList.remove('active'); }
+        carregar();
+    </script>
 </body>
 </html>
