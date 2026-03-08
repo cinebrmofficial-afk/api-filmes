@@ -6,7 +6,6 @@
 <title>Filmes Online</title>
 
 <style>
-
 body{
 background:#0f172a;
 font-family:Arial;
@@ -60,49 +59,45 @@ text-decoration:none;
 .card a:hover{
 background:#16a34a;
 }
-
 </style>
 </head>
 
 <body>
 
-<header>
-🎬 CineBR Filmes
-</header>
+<header>🎬 CineBR Filmes</header>
 
 <div id="lista-filmes"></div>
 
 <script>
 
-const api = "https://raw.githubusercontent.com/cinebrmofficial-afk/api-filmes/main/filmes.json"
+const api = "https://raw.githubusercontent.com/cinebrmofficial-afk/api-filmes/main/filmes.json";
 
 async function carregarFilmes(){
 
-const res = await fetch(api)
-const filmes = await res.json()
+const res = await fetch(api);
+const filmes = await res.json();
 
-const container = document.getElementById("lista-filmes")
-
-container.innerHTML = ""
+const container = document.getElementById("lista-filmes");
+container.innerHTML = "";
 
 filmes.forEach(filme => {
 
-const card = document.createElement("div")
-card.className = "card"
+const card = document.createElement("div");
+card.className = "card";
 
 card.innerHTML = `
 <img src="${filme.imagem}">
 <h3>${filme.nome}</h3>
 <a href="${filme.link}" target="_blank">Assistir</a>
-`
+`;
 
-container.appendChild(card)
+container.appendChild(card);
 
-})
+});
 
 }
 
-carregarFilmes()
+carregarFilmes();
 
 </script>
 
