@@ -5,70 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CineBMR - Oficial</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:sans-serif;background:#0f0f0f;color:#fff;padding-bottom:80px}
-        .header{position:sticky;top:0;z-index:100;background:#0f0f0f;padding:15px;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
-        .logo{width:35px;height:35px;background:url('logo.jpg') no-repeat center;background-size:cover;border-radius:8px;border:1.5px solid #2ecc71}
-        .search-bar{flex:1;background:#242424;border-radius:20px;padding:8px 15px}
-        .search-bar input{background:none;border:none;color:#fff;width:100%;outline:none}
-        .grid{display:grid;grid-template-columns:repeat(3, 1fr);gap:10px;padding:10px}
-        .card{background:#1a1a1a;border-radius:8px;overflow:hidden;cursor:pointer}
-        .card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
-        .card-info{padding:5px;font-size:10px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;align-items:center;justify-content:center;z-index:1000}
-        .modal.active{display:flex}
-        .modal-content{width:90%;max-width:350px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center}
-        .watch-btn{display:block;background:#2ecc71;color:#fff;padding:15px;border-radius:10px;text-decoration:none;margin-top:15px;font-weight:bold}
+        :root { --main-color: #00d4ff; --bg-dark: #0f0f0f; --card-bg: #1a1a1a; }
+        * { margin:0; padding:0; box-sizing:border-box; outline: none; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-dark); color: #fff; line-height: 1.5; }
+        
+        /* HEADER PREMIUM */
+        .header { position: sticky; top: 0; z-index: 1000; background: rgba(15,15,15,0.98); padding: 15px; border-bottom: 1px solid #333; display: flex; align-items: center; gap: 12px; }
+        .logo { width: 40px; height: 40px; background: url('logo.jpg') no-repeat center; background-size: cover; border-radius: 10px; border: 2px solid var(--main-color); box-shadow: 0 0 15px rgba(0, 212, 255, 0.4); }
+        .search-box { flex: 1; background: #242424; border-radius: 25px; display: flex; align-items: center; padding: 0 15px; height: 45px; border: 1px solid transparent; transition: 0.3s; }
+        .search-box:focus-within { border-color: var(--main-color); background: #2a2a2a; }
+        .search-box input { background: none; border: none; color: #fff; width: 100%; font-size: 14px; margin-left: 10px; }
+
+        /* GRID RESPONSIVO */
+        .container { padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; }
+        
+        /* CARDS ESTILO NETFLIX */
+        .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease; position: relative; border: 1px solid #222; }
+        .card:hover { transform: translateY(-5px); border-color: var(--main-color); }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; background: #222; }
+        .card-title { padding: 8px; font-size: 11px; font-weight: 600; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(to top, #000, transparent); }
+
+        /* PLAYER MODAL */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(5px); }
+        .modal.active { display: flex; }
+        .modal-content { width: 90%; max-width: 400px; background: #1a1a1a; padding: 25px; border-radius: 25px; text-align: center; border: 1px solid #333; }
+        .modal-content img { width: 100%; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn-play { display: block; background: var(--main-color); color: #fff; padding: 16px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 18px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3); }
+        .btn-play:hover { transform: scale(1.05); filter: brightness(1.1); }
+        
+        /* FOOTER NAV */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #222; z-index: 1000; }
+        .nav-item { color: #666; font-size: 10px; font-weight: bold; text-align: center; }
+        .nav-item.active { color: var(--main-color); }
     </style>
 </head>
 <body>
+
     <header class="header">
         <div class="logo"></div>
-        <div class="search-bar"><input type="text" id="search" placeholder="Buscar..." oninput="buscar()"></div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="O que vamos assistir hoje?" oninput="buscar()">
+        </div>
     </header>
-    <div id="lista" class="grid"></div>
+
+    <div class="container">
+        <h2 style="margin-bottom: 20px; font-size: 18px; color: var(--main-color)">🔥 Filmes em Alta</h2>
+        <div id="lista" class="grid"></div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active">INÍCIO</div>
+        <div class="nav-item">SÉRIES</div>
+        <div class="nav-item">PREMIUM</div>
+        <div class="nav-item">PERFIL</div>
+    </nav>
+
     <div id="modal" class="modal">
         <div class="modal-content">
-            <img id="mImg" style="width:100%;border-radius:10px">
-            <h2 id="mTitle" style="margin:15px 0;font-size:18px"></h2>
-            <a id="mLink" href="#" target="_blank" class="watch-btn">▶ ASSISTIR AGORA</a>
-            <button onclick="fechar()" style="background:none;border:none;color:#aaa;margin-top:20px">FECHAR</button>
+            <img id="mImg" src="">
+            <h2 id="mTitle" style="margin-bottom: 20px; font-size: 20px"></h2>
+            <a id="mLink" href="#" target="_blank" class="btn-play">ASSISTIR AGORA</a>
+            <p onclick="fechar()" style="color: #888; margin-top: 20px; cursor: pointer; font-weight: bold">FECHAR</p>
         </div>
     </div>
+
     <script>
         const API_KEY = '5799262499f305123f69c419c2a131e6'; 
         const IMG_URL = 'https://image.tmdb.org/t/p/w500';
         let db = [];
+
         async function carregar() {
             try {
-                const r = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR&page=1`);
-                const data = await r.json();
-                db = data.results.map(m => ({
-                    t: m.title,
-                    i: IMG_URL + m.poster_path,
-                    l: `https://embed.warezcdn.com/filme/${m.id}`
-                }));
+                // Puxa as 3 primeiras páginas (60 filmes) de uma vez
+                for(let p=1; p<=3; p++) {
+                    const r = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=pt-BR&page=${p}`);
+                    const data = await r.json();
+                    db = [...db, ...data.results];
+                }
                 render(db);
-            } catch (e) { document.getElementById('lista').innerHTML = 'Erro de conexão.'; }
+            } catch (e) { document.getElementById('lista').innerHTML = "Erro ao carregar catálogo."; }
         }
-        function render(d) {
-            document.getElementById('lista').innerHTML = d.map(m => `
-                <div class="card" onclick="abrir('${m.t.replace(/'/g, "")}','${m.i}','${m.l}')">
-                    <img src="${m.i}" loading="lazy">
-                    <div class="card-info">${m.t}</div>
+
+        function render(dados) {
+            document.getElementById('lista').innerHTML = dados.map(m => `
+                <div class="card" onclick="abrir('${m.title.replace(/'/g, "")}', '${IMG_URL + m.poster_path}', 'https://embed.warezcdn.com/filme/${m.id}')">
+                    <img src="${m.poster_path ? IMG_URL + m.poster_path : ''}" loading="lazy">
+                    <div class="card-title">${m.title}</div>
                 </div>
             `).join('');
         }
+
         function buscar() {
             let q = document.getElementById('search').value.toLowerCase();
-            render(db.filter(m => m.t.toLowerCase().includes(q)));
+            render(db.filter(m => m.title.toLowerCase().includes(q)));
         }
-        function abrir(t,i,l) {
+
+        function abrir(t, img, l) {
             document.getElementById('mTitle').innerText = t;
-            document.getElementById('mImg').src = i;
+            document.getElementById('mImg').src = img;
             document.getElementById('mLink').href = l;
             document.getElementById('modal').classList.add('active');
         }
+
         function fechar() { document.getElementById('modal').classList.remove('active'); }
         carregar();
     </script>
