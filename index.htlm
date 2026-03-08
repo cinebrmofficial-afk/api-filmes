@@ -1,48 +1,382 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<title>Filmes</title>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineBRM - Filmes Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            background: #0f0f0f;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding-bottom: 100px;
+        }
+
+        /* HEADER */
+        header {
+            background: #1a1a1a;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            width: 30px;
+            height: 30px;
+            background: #00d26a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: black;
+        }
+
+        .search-box {
+            flex: 1;
+            display: flex;
+            background: #333;
+            border-radius: 20px;
+            padding: 8px 15px;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+        }
+
+        .search-btn {
+            background: #00d26a;
+            color: black;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* MENU DE CATEGORIAS */
+        .categories {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            overflow-x: auto;
+            background: #0f0f0f;
+        }
+
+        .categories span {
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .categories .active {
+            color: #00d26a;
+            border-bottom: 2px solid #00d26a;
+        }
+
+        /* SEÇÕES */
+        .section {
+            padding: 20px 15px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .btn-all {
+            color: #00d26a;
+            cursor: pointer;
+        }
+
+        /* LISTA DE FILMES */
+        .movie-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .movie-card {
+            min-width: 110px;
+            max-width: 110px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .movie-card h3 {
+            font-size: 13px;
+            margin-top: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* BANNER DESTAQUE */
+        .banner {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #1a1a1a, #333);
+            margin: 0 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-content {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .banner h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .play-btn {
+            background: #00d26a;
+            color: black;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* NAVEGAÇÃO INFERIOR */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-top: 1px solid #333;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #888;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .nav-item.active {
+            color: #00d26a;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ff4444;
+        }
+    </style>
+</head>
 <body>
 
-<h1>Filmes</h1>
+    <!-- HEADER -->
+    <header>
+        <div class="logo">B</div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Prison Break">
+        </div>
+        <button class="search-btn" onclick="search()">Search</button>
+    </header>
 
-<div id="lista"></div>
+    <!-- CATEGORIAS -->
+    <div class="categories">
+        <span class="active">Trending</span>
+        <span>Movie</span>
+        <span>TV</span>
+        <span>Drama</span>
+        <span>Action</span>
+    </div>
 
-<script>
+    <!-- BANNER DESTAQUE -->
+    <div class="banner">
+        <div class="banner-content">
+            <h2>O Cavaleiro do...</h2>
+            <button class="play-btn">▶ Assistir</button>
+        </div>
+    </div>
 
-const api="https://raw.githubusercontent.com/cinebrmofficial-afk/api-filmes/main/filmes.json"
+    <!-- SEÇÃO TRENDING -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">Trending Drama</span>
+            <span class="btn-all">All</span>
+        </div>
+        <div class="movie-list" id="trendingList">
+            <div class="loading">Carregando...</div>
+        </div>
+    </div>
 
-async function carregar(){
+    <!-- SEÇÃO POPULAR -->
+    <div class="section">
+        <div class="section-header">
+            <span class="section-title">Popular Movie</span>
+            <span class="btn-all">All</span>
+        </div>
+        <div class="movie-list" id="popularList">
+            <div class="loading">Carregando...</div>
+        </div>
+    </div>
 
-const r=await fetch(api)
-const filmes=await r.json()
+    <!-- NAVEGAÇÃO INFERIOR -->
+    <div class="bottom-nav">
+        <div class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            Home
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">⭐</span>
+            Premium
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">⬇️</span>
+            Downloads
+        </div>
+        <div class="nav-item">
+            <span class="nav-icon">👤</span>
+            Me
+        </div>
+    </div>
 
-const lista=document.getElementById("lista")
+    <script>
+        // CONFIGURAÇÃO - Substitua pela URL do seu JSON no GitHub
+        const API_URL = 'https://raw.githubusercontent.com/cinebrmofficial-afk/api-filmes/main/filmes.json';
+        
+        // Fallback para teste local se o JSON falhar
+        const FILMES_FALLBACK = [
+            { nome: "Homem-Aranha", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Spider", link: "#" },
+            { nome: "Vingadores", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Avengers", link: "#" },
+            { nome: "Batman", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Batman", link: "#" },
+            { nome: "Superman", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Superman", link: "#" }
+        ];
 
-filmes.forEach(f=>{
+        // Função para criar card de filme
+        function createMovieCard(filme) {
+            return `
+                <div class="movie-card" onclick="openMovie('${filme.link}')">
+                    <img src="${filme.imagem}" alt="${filme.nome}" onerror="this.src='https://via.placeholder.com/110x160/333/00d26a?text=No+Image'">
+                    <h3>${filme.nome}</h3>
+                </div>
+            `;
+        }
 
-const div=document.createElement("div")
+        // Função para abrir filme
+        function openMovie(link) {
+            if (link && link !== '#') {
+                window.open(link, '_blank');
+            } else {
+                alert('Filme disponível em breve!');
+            }
+        }
 
-div.innerHTML=`
-<h3>${f.nome}</h3>
-<img src="${f.imagem}" width="200">
-<br>
-<a href="${f.link}" target="_blank">Assistir</a>
-<hr>
-`
+        // Função de busca
+        function search() {
+            const termo = document.getElementById('searchInput').value;
+            if (termo) {
+                alert('Buscando: ' + termo);
+            }
+        }
 
-lista.appendChild(div)
+        // Carregar filmes
+        async function loadMovies() {
+            try {
+                // Tenta buscar do JSON online
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error('Erro na resposta');
+                }
+                
+                const filmes = await response.json();
+                displayMovies(filmes);
+                
+            } catch (erro) {
+                console.log('Erro ao carregar JSON online:', erro);
+                console.log('Usando dados fallback...');
+                
+                // Usa dados locais se falhar
+                displayMovies(FILMES_FALLBACK);
+            }
+        }
 
-})
+        // Exibir filmes nas listas
+        function displayMovies(filmes) {
+            const trendingList = document.getElementById('trendingList');
+            const popularList = document.getElementById('popularList');
+            
+            // Divide os filmes entre as duas seções
+            const metade = Math.ceil(filmes.length / 2);
+            const trendingFilmes = filmes.slice(0, metade);
+            const popularFilmes = filmes.slice(metade);
+            
+            // Preenche Trending
+            trendingList.innerHTML = trendingFilmes.map(createMovieCard).join('');
+            
+            // Preenche Popular (ou repete se poucos filmes)
+            if (popularFilmes.length > 0) {
+                popularList.innerHTML = popularFilmes.map(createMovieCard).join('');
+            } else {
+                popularList.innerHTML = filmes.map(createMovieCard).join('');
+            }
+        }
 
-}
-
-carregar()
-
-</script>
+        // Inicia quando a página carrega
+        document.addEventListener('DOMContentLoaded', loadMovies);
+    </script>
 
 </body>
 </html>
