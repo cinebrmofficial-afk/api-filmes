@@ -1,14 +1,17 @@
 [
   {
-    "titulo": "Deadpool & Wolverine",
-    "categoria": "filme",
-    "imagem": "https://image.tmdb.org/t/p/w500/86v9S99p9u6P6Rfs9L8Z99S99S9.jpg",
-    "link": "https://embed.warezcdn.com/filme/tt6263850"
+    "nome": "Homem-Aranha",
+    "imagem": "https://i.imgur.com/3yaf2QG.jpg",
+    "link": "https://example.com"
   },
   {
-    "titulo": "Solo Leveling",
-    "categoria": "anime",
-    "imagem": "https://image.tmdb.org/t/p/w500/geCR7mS7vPhP47v91N9C936GPba.jpg",
-    "link": "https://embed.warezcdn.com/serie/tt10586834"
+    "nome": "Vingadores",
+    "imagem": "https://i.imgur.com/9O1Z6QF.jpg",
+    "link": "https://example.com"
+  },
+  {
+    "nome": "Batman",
+    "imagem": "https://i.imgur.com/4YQZ4sE.jpg",
+    "link": "https://example.com"
   }
 ]
