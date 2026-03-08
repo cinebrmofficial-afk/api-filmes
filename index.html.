@@ -3,169 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f0f0f">
-    <title>CineBMR - Filmes e Séries Grátis</title>
+    <title>CineBMR - Oficial</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        html,body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f0f;color:#fff;height:100%;overflow-x:hidden}
-        .splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#0f0f0f 0%,#1a1a2e 100%);display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .5s}
-        .logo-container{text-align:center;animation:pulse 2s infinite}
-        .splash-logo{width:120px;height:120px;margin-bottom:20px;background:linear-gradient(45deg,#00d4ff,#00d084);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:bold}
-        .splash-title{font-size:32px;font-weight:bold;background:linear-gradient(45deg,#00d4ff,#00d084);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
-        @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-        .app-container{min-height:100vh;padding-bottom:80px;display:none}
-        .app-container.active{display:block}
-        .header{position:sticky;top:0;background:#0f0f0f;z-index:100;padding:10px 16px;border-bottom:1px solid #333}
-        .header-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-        .logo-small{width:32px;height:32px;background:linear-gradient(45deg,#00d4ff,#00d084);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:18px}
-        .search-bar{flex:1;display:flex;background:#242424;border-radius:20px;padding:8px 16px;align-items:center}
-        .search-bar input{flex:1;background:none;border:none;color:#fff;font-size:14px;outline:none}
-        .nav-tabs{display:flex;gap:20px;overflow-x:auto;scrollbar-width:none;margin-top:10px}
-        .nav-tab{background:none;border:none;color:#a0a0a0;font-size:14px;padding:8px 0;cursor:pointer;white-space:nowrap;position:relative}
-        .nav-tab.active{color:#fff;font-weight:600}
-        .nav-tab.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#00d084}
-        .main-content{padding:16px}
-        .hero-banner{position:relative;border-radius:16px;overflow:hidden;margin-bottom:24px;aspect-ratio:16/9;background:#1a1a1a;cursor:pointer}
-        .hero-bg{width:100%;height:100%;object-fit:cover}
-        .hero-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.9))}
-        .play-btn{width:48px;height:48px;border-radius:50%;background:#00d084;border:none;display:flex;align-items:center;justify-content:center}
-        .content-section{margin-bottom:24px}
-        .horizontal-scroll{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none}
-        .movie-card{flex:0 0 auto;width:140px;cursor:pointer}
-        .movie-poster{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:2/3;background:#1a1a1a;margin-bottom:8px}
-        .movie-poster img{width:100%;height:100%;object-fit:cover}
-        .movie-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#0f0f0f;border-top:1px solid #333;display:flex;justify-content:space-around;padding:8px 0;z-index:1000}
-        .nav-item{background:none;border:none;color:#a0a0a0;display:flex;flex-direction:column;align-items:center;font-size:11px}
-        .nav-item.active{color:#00d084}
-        .modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10000;display:none;align-items:center;justify-content:center}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:sans-serif;background:#0f0f0f;color:#fff;padding-bottom:80px}
+        .header{padding:15px;border-bottom:1px solid #333;display:flex;align-items:center;gap:10px}
+        .logo{background:linear-gradient(45deg,#00d4ff,#00d084);padding:8px;border-radius:8px;font-weight:bold}
+        .search-bar{flex:1;background:#242424;border-radius:20px;padding:8px 15px}
+        .search-bar input{background:none;border:none;color:#fff;width:100%;outline:none}
+        .main{padding:15px}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:15px}
+        .card{background:#1a1a1a;border-radius:12px;overflow:hidden;cursor:pointer}
+        .card img{width:100%;aspect-ratio:2/3;object-fit:cover}
+        .card-info{padding:8px;font-size:13px;text-align:center}
+        .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:1000}
         .modal.active{display:flex}
-        .modal-content{width:90%;max-width:400px;text-align:center;background:#1a1a1a;padding:20px;border-radius:20px}
-        .modal-content img{width:100%;border-radius:12px;margin-bottom:15px}
-        .watch-btn{display:block;width:100%;padding:15px;background:#00d084;color:white;text-decoration:none;border-radius:12px;font-weight:bold;margin-top:10px}
-        .close-modal{margin-top:15px;color:#a0a0a0;background:none;border:none;cursor:pointer}
+        .modal-content{width:90%;max-width:400px;background:#1a1a1a;padding:20px;border-radius:20px;text-align:center}
+        .watch-btn{display:block;background:#00d084;color:#fff;padding:15px;border-radius:10px;text-decoration:none;margin-top:15px;font-weight:bold}
     </style>
 </head>
 <body>
-    <div id="splash" class="splash-screen">
-        <div class="logo-container">
-            <div class="splash-logo">CB</div>
-            <h1 class="splash-title">CineBMR</h1>
-        </div>
+    <header class="header">
+        <div class="logo">CB</div>
+        <div class="search-bar"><input type="text" id="search" placeholder="Buscar..." oninput="buscar()"></div>
+    </header>
+    <div class="main">
+        <h3 style="margin-bottom:15px">Lançamentos</h3>
+        <div class="grid" id="lista"></div>
     </div>
 
-    <div id="app" class="app-container">
-        <header class="header">
-            <div class="header-top">
-                <div class="logo-small">CB</div>
-                <div class="search-bar">
-                    <input type="text" placeholder="Buscar filmes..." id="searchInput" oninput="searchMovies()">
-                </div>
-            </div>
-            <nav class="nav-tabs">
-                <button class="nav-tab active" onclick="filterCat('all')">Início</button>
-                <button class="nav-tab" onclick="filterCat('filme')">Filmes</button>
-                <button class="nav-tab" onclick="filterCat('serie')">Séries</button>
-                <button class="nav-tab" onclick="filterCat('anime')">Animes</button>
-            </nav>
-        </header>
-
-        <main class="main-content">
-            <div class="hero-banner" id="heroBanner" onclick="openHero()">
-                <img src="" id="heroImg" class="hero-bg">
-                <div class="hero-overlay">
-                    <h2 id="heroTitle">Carregando...</h2>
-                    <button class="play-btn">▶</button>
-                </div>
-            </div>
-
-            <section class="content-section">
-                <h3 style="margin-bottom:15px">🔥 Adicionados Recentemente</h3>
-                <div class="horizontal-scroll" id="movieList"></div>
-            </section>
-        </main>
-
-        <nav class="bottom-nav">
-            <div class="nav-item active">🏠<span>Home</span></div>
-            <div class="nav-item">🔍<span>Busca</span></div>
-            <div class="nav-item">👤<span>Perfil</span></div>
-        </nav>
-    </div>
-
-    <div id="playerModal" class="modal">
+    <div id="modal" class="modal">
         <div class="modal-content">
-            <img id="mImg" src="">
-            <h2 id="mTitle"></h2>
+            <img id="mImg" style="width:100%;border-radius:10px">
+            <h2 id="mTitle" style="margin:10px 0"></h2>
             <a id="mLink" href="#" target="_blank" class="watch-btn">ASSISTIR AGORA</a>
-            <button class="close-modal" onclick="closePlayer()">FECHAR</button>
+            <button onclick="fechar()" style="background:none;border:none;color:#aaa;margin-top:15px">Fechar</button>
         </div>
     </div>
 
     <script>
-        let movies = [];
-
-        // Splash
-        setTimeout(() => {
-            document.getElementById('splash').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('splash').style.display = 'none';
-                document.getElementById('app').classList.add('active');
-            }, 500);
-        }, 2000);
-
-        // Carregar filmes do seu próprio arquivo JSON
-        async function loadData() {
-            try {
-                const req = await fetch('filmes.json');
-                movies = await req.json();
-                render(movies);
-                if(movies.length > 0) {
-                    document.getElementById('heroImg').src = movies[0].imagem;
-                    document.getElementById('heroTitle').innerText = movies[0].titulo;
-                }
-            } catch (e) {
-                console.error("Crie o arquivo filmes.json no seu GitHub!");
-            }
+        let db = [];
+        async function carregar(){
+            const r = await fetch('filmes.json');
+            db = await r.json();
+            render(db);
         }
-
-        function render(data) {
-            const list = document.getElementById('movieList');
-            list.innerHTML = data.map(m => `
-                <div class="movie-card" onclick="openPlayer('${m.titulo}', '${m.imagem}', '${m.link}')">
-                    <div class="movie-poster">
-                        <img src="${m.imagem}">
-                    </div>
-                    <div class="movie-title">${m.titulo}</div>
+        function render(dados){
+            document.getElementById('lista').innerHTML = dados.map(m => `
+                <div class="card" onclick="abrir('${m.titulo}','${m.imagem}','${m.link}')">
+                    <img src="${m.imagem}">
+                    <div class="card-info">${m.titulo}</div>
                 </div>
             `).join('');
         }
-
-        function filterCat(cat) {
-            if(cat === 'all') return render(movies);
-            render(movies.filter(m => m.categoria === cat));
+        function buscar(){
+            let q = document.getElementById('search').value.toLowerCase();
+            render(db.filter(m => m.titulo.toLowerCase().includes(q)));
         }
-
-        function searchMovies() {
-            let q = document.getElementById('searchInput').value.toLowerCase();
-            render(movies.filter(m => m.titulo.toLowerCase().includes(q)));
-        }
-
-        function openPlayer(t, img, link) {
+        function abrir(t,img,l){
             document.getElementById('mTitle').innerText = t;
             document.getElementById('mImg').src = img;
-            document.getElementById('mLink').href = link;
-            document.getElementById('playerModal').classList.add('active');
+            document.getElementById('mLink').href = l;
+            document.getElementById('modal').classList.add('active');
         }
-
-        function closePlayer() {
-            document.getElementById('playerModal').classList.remove('active');
-        }
-
-        function openHero() {
-            if(movies.length > 0) openPlayer(movies[0].titulo, movies[0].imagem, movies[0].link);
-        }
-
-        loadData();
+        function fechar(){ document.getElementById('modal').classList.remove('active'); }
+        carregar();
     </script>
 </body>
 </html>
