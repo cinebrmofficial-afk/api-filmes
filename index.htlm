@@ -3,379 +3,1479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineBRM - Filmes Online</title>
+    <title>BRM - Browser & Resource Manager</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            overflow-x: hidden;
         }
 
-        body {
-            background: #0f0f0f;
-            color: white;
-            font-family: Arial, sans-serif;
-            padding-bottom: 100px;
+        /* LOADING */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* HEADER */
-        header {
-            background: #1a1a1a;
-            padding: 15px;
+        .header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            position: sticky;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.95);
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .logo {
-            width: 30px;
-            height: 30px;
-            background: #00d26a;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: black;
+            color: #000;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(0,212,255,0.5);
         }
 
         .search-box {
             flex: 1;
-            display: flex;
-            background: #333;
-            border-radius: 20px;
-            padding: 8px 15px;
+            position: relative;
         }
 
         .search-box input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 25px;
+            padding: 10px 40px 10px 16px;
+            color: #fff;
+            font-size: 14px;
             outline: none;
         }
 
-        .search-btn {
-            background: #00d26a;
-            color: black;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-weight: bold;
+        .search-box input:focus {
+            border-color: #00d4ff;
         }
 
-        /* MENU DE CATEGORIAS */
-        .categories {
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* BOTTOM NAV */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,10,10,0.98);
             display: flex;
-            gap: 20px;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid #222;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #666;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 4px 16px;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active {
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+
+        .nav-icon {
+            font-size: 22px;
+        }
+
+        /* PAGES */
+        .page {
+            display: none;
+            padding-top: 60px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* HOME PAGE - CAROUSEL */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center top;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        .carousel-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 40%, transparent 100%);
+        }
+
+        .carousel-info {
+            position: absolute;
+            bottom: 50px;
+            left: 20px;
+            right: 20px;
+        }
+
+        .carousel-info h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .carousel-info .meta {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .carousel-info .meta span {
+            margin-right: 15px;
+        }
+
+        .carousel-info .overview {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.5;
+            max-width: 90%;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #00d4ff;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* CATEGORIES MENU */
+        .cat-menu {
+            display: flex;
+            gap: 10px;
             padding: 15px;
             overflow-x: auto;
-            background: #0f0f0f;
+            background: #000;
+            border-bottom: 1px solid #111;
         }
 
-        .categories span {
-            cursor: pointer;
+        .cat-menu::-webkit-scrollbar { display: none; }
+
+        .cat-item {
             white-space: nowrap;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
         }
 
-        .categories .active {
-            color: #00d26a;
-            border-bottom: 2px solid #00d26a;
+        .cat-item:hover, .cat-item.active {
+            color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+            border-color: rgba(0,212,255,0.3);
         }
 
-        /* SEÇÕES */
+        /* MOVIE SECTIONS */
         .section {
-            padding: 20px 15px;
+            padding: 20px 0;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 0 16px;
             margin-bottom: 15px;
         }
 
         .section-title {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-all {
-            color: #00d26a;
+        .see-all {
+            color: #00d4ff;
+            font-size: 13px;
             cursor: pointer;
         }
 
-        /* LISTA DE FILMES */
-        .movie-list {
+        .movie-row {
             display: flex;
             gap: 12px;
+            padding: 0 16px;
             overflow-x: auto;
-            padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
         }
+
+        .movie-row::-webkit-scrollbar { height: 4px; }
+        .movie-row::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
         .movie-card {
             min-width: 110px;
             max-width: 110px;
+            scroll-snap-align: start;
             cursor: pointer;
             transition: transform 0.2s;
+            position: relative;
         }
 
-        .movie-card:hover {
-            transform: scale(1.05);
-        }
+        .movie-card:active { transform: scale(0.95); }
 
         .movie-card img {
-            width: 100%;
-            height: 160px;
+            width: 110px;
+            height: 165px;
             object-fit: cover;
             border-radius: 8px;
+            background: #1a1a1a;
         }
 
-        .movie-card h3 {
-            font-size: 13px;
+        .movie-card .title {
+            font-size: 12px;
             margin-top: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #ccc;
         }
 
-        /* BANNER DESTAQUE */
-        .banner {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #1a1a1a, #333);
-            margin: 0 15px 20px;
+        .movie-card .rating {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.8);
+            color: #ffd700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* PREMIUM PAGE */
+        .premium-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+
+        .profile-info h3 {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            background: #333;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .premium-benefits {
+            background: rgba(0,0,0,0.3);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .benefit-item:last-child { border-bottom: none; }
+
+        .benefit-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0,212,255,0.1);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            overflow: hidden;
+            font-size: 20px;
         }
 
-        .banner-content {
-            text-align: center;
-            z-index: 2;
+        .benefit-text { flex: 1; }
+        .benefit-text h4 { font-size: 14px; margin-bottom: 2px; }
+        .benefit-text p { font-size: 12px; color: #888; }
+
+        .price-tag {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 14px;
         }
 
-        .banner h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .play-btn {
-            background: #00d26a;
-            color: black;
+        .btn-premium {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #000;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
+            padding: 16px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: bold;
+            width: calc(100% - 40px);
+            margin: 0 20px 20px;
+            cursor: pointer;
+        }
+
+        .tasks-section {
+            padding: 20px;
+        }
+
+        .task-item {
+            background: #111;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-info h4 { font-size: 14px; margin-bottom: 4px; }
+        .task-info p { font-size: 12px; color: #666; }
+
+        .btn-watch {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
         }
 
-        /* NAVEGAÇÃO INFERIOR */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #1a1a1a;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #333;
+        .checkin-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            padding: 20px;
         }
 
-        .nav-item {
-            text-align: center;
-            color: #888;
+        .checkin-day {
+            aspect-ratio: 1;
+            background: #111;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .checkin-day.claimed {
+            background: rgba(0,212,255,0.2);
+            color: #00d4ff;
+        }
+
+        /* DOWNLOADS PAGE */
+        .downloads-header {
+            padding: 20px;
+            background: #111;
+        }
+
+        .ad-banner {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .download-item {
+            background: #111;
+            margin: 0 16px 12px;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .download-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .download-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .download-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .manage-btn {
+            color: #00d4ff;
+            font-size: 12px;
             cursor: pointer;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #222;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+            border-radius: 3px;
+            transition: width 0.3s;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+        }
+
+        .download-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        .status-waiting { background: #332200; color: #ffaa00; }
+        .status-downloading { background: #002233; color: #00d4ff; }
+        .status-paused { background: #330000; color: #ff4444; }
+
+        .options-menu {
+            position: absolute;
+            right: 16px;
+            top: 50px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 120px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 100;
+        }
+
+        .options-menu.show { display: block; }
+
+        .option-item {
+            padding: 12px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-item:hover { background: #222; }
+        .option-item.delete { color: #ff4444; }
+
+        /* STORAGE TABS */
+        .storage-tabs {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            overflow-x: auto;
+        }
+
+        .storage-tab {
+            min-width: 100px;
+            background: #111;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .storage-tab.active {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+        }
+
+        .storage-tab .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .storage-tab .name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .storage-tab .count {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ME PAGE */
+        .me-header {
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #1a1a2e, #0f0f23);
+            text-align: center;
+        }
+
+        .me-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            border: 4px solid rgba(255,255,255,0.1);
+        }
+
+        .login-btn {
+            background: transparent;
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .menu-list {
+            padding: 20px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 0;
+            border-bottom: 1px solid #111;
+            cursor: pointer;
+        }
+
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .menu-text { flex: 1; }
+        .menu-text h4 { font-size: 15px; margin-bottom: 2px; }
+        .menu-text p { font-size: 12px; color: #666; }
+
+        .arrow {
+            color: #444;
+            font-size: 18px;
+        }
+
+        .settings-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+        }
+
+        .version-info {
+            text-align: center;
+            padding: 30px;
+            color: #444;
             font-size: 12px;
         }
 
-        .nav-item.active {
-            color: #00d26a;
-        }
-
-        .nav-icon {
-            font-size: 20px;
-            display: block;
-            margin-bottom: 3px;
-        }
-
-        /* LOADING */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-
-        .error {
+        /* ERROR MESSAGE */
+        .error-msg {
             text-align: center;
             padding: 40px;
             color: #ff4444;
         }
+
+        .retry-btn {
+            background: #00d4ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        /* UTILS */
+        .hidden { display: none !important; }
+        
+        ::-webkit-scrollbar { width: 0; height: 0; }
     </style>
 </head>
 <body>
 
+    <!-- LOADING SCREEN -->
+    <div class="loading-screen" id="loading">
+        <div class="loader"></div>
+        <p style="margin-top: 20px; color: #666;">Carregando filmes...</p>
+    </div>
+
     <!-- HEADER -->
-    <header>
+    <div class="header">
         <div class="logo">B</div>
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Prison Break">
-        </div>
-        <button class="search-btn" onclick="search()">Search</button>
-    </header>
-
-    <!-- CATEGORIAS -->
-    <div class="categories">
-        <span class="active">Trending</span>
-        <span>Movie</span>
-        <span>TV</span>
-        <span>Drama</span>
-        <span>Action</span>
-    </div>
-
-    <!-- BANNER DESTAQUE -->
-    <div class="banner">
-        <div class="banner-content">
-            <h2>O Cavaleiro do...</h2>
-            <button class="play-btn">▶ Assistir</button>
+            <input type="text" id="searchInput" placeholder="Buscar filmes, séries...">
+            <span class="search-icon" onclick="searchMovies()">🔎</span>
         </div>
     </div>
 
-    <!-- SEÇÃO TRENDING -->
-    <div class="section">
-        <div class="section-header">
-            <span class="section-title">Trending Drama</span>
-            <span class="btn-all">All</span>
+    <!-- PAGES -->
+    
+    <!-- HOME PAGE -->
+    <div class="page active" id="page-home">
+        <!-- Carousel -->
+        <div class="carousel-container" id="carousel">
+            <div class="carousel-dots" id="carousel-dots"></div>
         </div>
-        <div class="movie-list" id="trendingList">
-            <div class="loading">Carregando...</div>
+
+        <!-- Categories -->
+        <div class="cat-menu">
+            <div class="cat-item active" onclick="filterCategory('all', this)">Todos</div>
+            <div class="cat-item" onclick="filterCategory(28, this)">Ação</div>
+            <div class="cat-item" onclick="filterCategory(35, this)">Comédia</div>
+            <div class="cat-item" onclick="filterCategory(18, this)">Drama</div>
+            <div class="cat-item" onclick="filterCategory(27, this)">Terror</div>
+            <div class="cat-item" onclick="filterCategory(878, this)">Ficção</div>
+            <div class="cat-item" onclick="filterCategory(16, this)">Animação</div>
+            <div class="cat-item" onclick="filterCategory(10749, this)">Romance</div>
+            <div class="cat-item" onclick="filterCategory(53, this)">Thriller</div>
+        </div>
+
+        <!-- Movie Sections -->
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">🔥 Populares</span>
+                <span class="see-all" onclick="loadMore('popular')">Ver todos</span>
+            </div>
+            <div class="movie-row" id="populares">
+                <div style="padding: 20px; color: #666;">Carregando...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">⭐ Mais Avaliados</span>
+                <span class="see-all" onclick="loadMore('top_rated')">Ver todos</span>
+            </div>
+            <div class="movie-row" id="baixados">
+                <div style="padding: 20px; color: #666;">Carregando...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">🎬 Em Cartaz</span>
+                <span class="see-all" onclick="loadMore('now_playing')">Ver todos</span>
+            </div>
+            <div class="movie-row" id="cartaz">
+                <div style="padding: 20px; color: #666;">Carregando...</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span class="section-title">🆕 Lançamentos</span>
+                <span class="see-all" onclick="loadMore('upcoming')">Ver todos</span>
+            </div>
+            <div class="movie-row" id="lancamentos">
+                <div style="padding: 20px; color: #666;">Carregando...</div>
+            </div>
         </div>
     </div>
 
-    <!-- SEÇÃO POPULAR -->
-    <div class="section">
-        <div class="section-header">
-            <span class="section-title">Popular Movie</span>
-            <span class="btn-all">All</span>
+    <!-- PREMIUM PAGE -->
+    <div class="page" id="page-premium">
+        <div class="premium-header">
+            <div class="profile-section">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-info">
+                    <h3>Visitante</h3>
+                    <span class="plan-badge">Free Plan</span>
+                </div>
+            </div>
+            <p style="color: #aaa; font-size: 14px;">Obtenha benefícios premium</p>
         </div>
-        <div class="movie-list" id="popularList">
-            <div class="loading">Carregando...</div>
+
+        <div class="premium-benefits">
+            <div class="benefit-item">
+                <div class="benefit-icon">🍿</div>
+                <div class="benefit-text">
+                    <h4>Sem Anúncios</h4>
+                    <p>Assista sem interrupções</p>
+                </div>
+                <span class="price-tag">$2.99</span>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">💎</div>
+                <div class="benefit-text">
+                    <h4>Qualidade 720p</h4>
+                    <p>Streaming HD premium</p>
+                </div>
+                <span class="price-tag">$4.99</span>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">👑</div>
+                <div class="benefit-text">
+                    <h4>Multi Downloads</h4>
+                    <p>Baixe até 5 filmes simultâneos</p>
+                </div>
+                <span class="price-tag">$3.99</span>
+            </div>
+        </div>
+
+        <button class="btn-premium">🌟 GET FREE PREMIUM</button>
+
+        <div class="tasks-section">
+            <h3 style="padding: 0 20px 15px; font-size: 16px;">Complete tasks to get points</h3>
+            
+            <div class="checkin-grid">
+                <div class="checkin-day claimed">⭐+2</div>
+                <div class="checkin-day claimed">⭐+2</div>
+                <div class="checkin-day claimed">⭐+2</div>
+                <div class="checkin-day">⭐+2</div>
+                <div class="checkin-day">⭐+2</div>
+                <div class="checkin-day">⭐+2</div>
+                <div class="checkin-day">⭐+2</div>
+            </div>
+
+            <div style="padding: 20px;">
+                <h4 style="margin-bottom: 15px; color: #00d4ff;">Watch and Earn</h4>
+                
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Video time reaches 30mins</h4>
+                        <p style="color: #666; font-size: 12px;">Progresso: 5/30 mins</p>
+                    </div>
+                    <button class="btn-watch">▶ Watch</button>
+                </div>
+
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Video time reaches 60mins</h4>
+                        <p style="color: #666; font-size: 12px;">Progresso: 5/60 mins</p>
+                    </div>
+                    <button class="btn-watch">▶ Watch</button>
+                </div>
+
+                <h4 style="margin: 25px 0 15px; color: #00d4ff;">Play and Earn</h4>
+                
+                <div class="task-item">
+                    <div class="task-info">
+                        <h4>Play each game 30+ seconds</h4>
+                        <p style="color: #666; font-size: 12px;">Jogue para ganhar pontos</p>
+                    </div>
+                    <button class="btn-watch">▶ Play</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- NAVEGAÇÃO INFERIOR -->
+    <!-- DOWNLOADS PAGE -->
+    <div class="page" id="page-downloads">
+        <div class="downloads-header">
+            <div class="ad-banner" id="ad-banner">
+                <span>📢</span>
+                <span>Assista para remover anúncios! Premium por $2.99</span>
+                <span style="margin-left: auto; cursor: pointer;" onclick="this.parentElement.style.display='none'">✕</span>
+            </div>
+            
+            <h2 style="font-size: 24px; margin-bottom: 5px;">Downloads <span style="color: #00d4ff;">(2)</span></h2>
+            <p style="color: #666; font-size: 13px;">Gerencie seus downloads</p>
+        </div>
+
+        <div class="download-item">
+            <div class="download-header">
+                <div>
+                    <div class="download-title">🎬 Beekeeper 360p</div>
+                    <div class="download-meta">No internet • Aguardando...</div>
+                </div>
+                <span class="manage-btn" onclick="toggleOptions(this)">⋮</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 10%;"></div>
+            </div>
+            <div class="download-stats">
+                <span>92.5 MB / 858.3 MB</span>
+                <span>10%</span>
+            </div>
+            <span class="status-badge status-waiting">⏸️ Waiting</span>
+            
+            <div class="options-menu">
+                <div class="option-item delete" onclick="deleteDownload(this)">🗑️ Apagar</div>
+                <div class="option-item" onclick="cancelDownload(this)">✕ Cancelar</div>
+                <div class="option-item" onclick="helpDownload(this)">❓ Ajuda</div>
+            </div>
+        </div>
+
+        <div class="download-item">
+            <div class="download-header">
+                <div>
+                    <div class="download-title">🎬 Duna: Parte 2 720p</div>
+                    <div class="download-meta">WiFi • Baixando...</div>
+                </div>
+                <span class="manage-btn" onclick="toggleOptions(this)">⋮</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 45%;"></div>
+            </div>
+            <div class="download-stats">
+                <span>420.1 MB / 933.5 MB</span>
+                <span>45%</span>
+            </div>
+            <span class="status-badge status-downloading">⬇️ Downloading</span>
+            
+            <div class="options-menu">
+                <div class="option-item delete" onclick="deleteDownload(this)">🗑️ Apagar</div>
+                <div class="option-item" onclick="cancelDownload(this)">✕ Cancelar</div>
+                <div class="option-item" onclick="helpDownload(this)">❓ Ajuda</div>
+            </div>
+        </div>
+
+        <div style="padding: 20px; border-top: 1px solid #222; margin-top: 20px;">
+            <h3 style="margin-bottom: 15px;">📁 Arquivos Baixados</h3>
+            
+            <div class="storage-tabs">
+                <div class="storage-tab active" onclick="switchTab(this, 'brm')">
+                    <div class="icon">📱</div>
+                    <div class="name">BRM</div>
+                    <div class="count">(1) arquivo</div>
+                </div>
+                <div class="storage-tab" onclick="switchTab(this, 'local')">
+                    <div class="icon">💾</div>
+                    <div class="name">Local</div>
+                    <div class="count">Celular</div>
+                </div>
+                <div class="storage-tab" onclick="switchTab(this, 'received')">
+                    <div class="icon">📥</div>
+                    <div class="name">Receive</div>
+                    <div class="count">Transferido</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ME PAGE -->
+    <div class="page" id="page-me">
+        <div class="me-header">
+            <div class="me-avatar">👤</div>
+            <h3>Log in your account</h3>
+            <p style="color: #666; font-size: 13px; margin-top: 5px;">ID: null</p>
+            <button class="login-btn">Entrar</button>
+        </div>
+
+        <div class="menu-list">
+            <div class="menu-item">
+                <div class="menu-icon">👨‍👩‍👧‍👦</div>
+                <div class="menu-text">
+                    <h4>Family Mode</h4>
+                    <p>Conteúdo family-friendly</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">🎯</div>
+                <div class="menu-text">
+                    <h4>Tasks for Free Premium</h4>
+                    <p>Ganhe premium assistindo</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">🔖</div>
+                <div class="menu-text">
+                    <h4>My List</h4>
+                    <p>Seus filmes salvos</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">❤️</div>
+                <div class="menu-text">
+                    <h4>My Likes</h4>
+                    <p>Filmes que você curtiu</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">🕐</div>
+                <div class="menu-text">
+                    <h4>Watch History</h4>
+                    <p>Histórico de visualização</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">💬</div>
+                <div class="menu-text">
+                    <h4>Messages</h4>
+                    <p>Suas conversas</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">🌐</div>
+                <div class="menu-text">
+                    <h4>Community</h4>
+                    <p>Grupos e discussões</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">📌</div>
+                <div class="menu-text">
+                    <h4>Posts</h4>
+                    <p>Suas publicações</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">💭</div>
+                <div class="menu-text">
+                    <h4>Meus Comentários</h4>
+                    <p>Comentários em filmes</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-icon">📩</div>
+                <div class="menu-text">
+                    <h4>Feedback</h4>
+                    <p>Envie sua opinião</p>
+                </div>
+                <span class="arrow">›</span>
+            </div>
+
+            <div class="settings-section">
+                <div class="menu-item">
+                    <div class="menu-icon">⚙️</div>
+                    <div class="menu-text">
+                        <h4>Definições</h4>
+                        <p>Configurações do app</p>
+                    </div>
+                    <span class="arrow">›</span>
+                </div>
+
+                <div class="menu-item">
+                    <div class="menu-icon">🔗</div>
+                    <div class="menu-text">
+                        <h4>Official Website</h4>
+                        <p>BRM.ph - Copy link</p>
+                    </div>
+                    <span class="arrow">›</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="version-info">
+            <p>BRM v2.0.1 - TMDB Edition</p>
+            <p style="margin-top: 5px;">Made with ❤️ Pro Max</p>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
     <div class="bottom-nav">
-        <div class="nav-item active">
-            <span class="nav-icon">🏠</span>
+        <div class="nav-item active" onclick="showPage('home', this)">
+            <span class="nav-icon">🌐</span>
             Home
         </div>
-        <div class="nav-item">
-            <span class="nav-icon">⭐</span>
+        <div class="nav-item" onclick="showPage('premium', this)">
+            <span class="nav-icon">🏆</span>
             Premium
         </div>
-        <div class="nav-item">
-            <span class="nav-icon">⬇️</span>
+        <div class="nav-item" onclick="showPage('downloads', this)">
+            <span class="nav-icon">⚡</span>
             Downloads
         </div>
-        <div class="nav-item">
-            <span class="nav-icon">👤</span>
+        <div class="nav-item" onclick="showPage('me', this)">
+            <span class="nav-icon">🗽</span>
             Me
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO - Substitua pela URL do seu JSON no GitHub
-        const API_URL = 'https://raw.githubusercontent.com/cinebrmofficial-afk/api-filmes/main/filmes.json';
+        // ==========================================
+        // CONFIGURAÇÃO TMDB - BEARER TOKEN
+        // ==========================================
+        const BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1Nzk5MjYyNDk5ZjMwNTEyM2Y2OWM0MTljMmExMzFlNiIsIm5iZiI6MTc3MjgzMzU2Ni4wMzgsInN1YiI6IjY5YWI0YjFlYTE1NGRhMTQyZWZkMDI1YSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.ZehX9D-LG8Q5r8J-W1IIMIbYPJF4hxpa0OGKdgaWhj8';
         
-        // Fallback para teste local se o JSON falhar
-        const FILMES_FALLBACK = [
-            { nome: "Homem-Aranha", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Spider", link: "#" },
-            { nome: "Vingadores", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Avengers", link: "#" },
-            { nome: "Batman", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Batman", link: "#" },
-            { nome: "Superman", imagem: "https://via.placeholder.com/110x160/333/00d26a?text=Superman", link: "#" }
-        ];
+        const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+        const TMDB_IMG_URL = 'https://image.tmdb.org/t/p/w200';
+        const TMDB_BACKDROP_URL = 'https://image.tmdb.org/t/p/original';
 
-        // Função para criar card de filme
-        function createMovieCard(filme) {
-            return `
-                <div class="movie-card" onclick="openMovie('${filme.link}')">
-                    <img src="${filme.imagem}" alt="${filme.nome}" onerror="this.src='https://via.placeholder.com/110x160/333/00d26a?text=No+Image'">
-                    <h3>${filme.nome}</h3>
-                </div>
-            `;
-        }
+        // Headers para autenticação
+        const headers = {
+            'Authorization': `Bearer ${BEARER_TOKEN}`,
+            'accept': 'application/json'
+        };
 
-        // Função para abrir filme
-        function openMovie(link) {
-            if (link && link !== '#') {
-                window.open(link, '_blank');
-            } else {
-                alert('Filme disponível em breve!');
-            }
-        }
+        // Dados em cache
+        let moviesCache = {
+            popular: [],
+            top_rated: [],
+            now_playing: [],
+            upcoming: []
+        };
 
-        // Função de busca
-        function search() {
-            const termo = document.getElementById('searchInput').value;
-            if (termo) {
-                alert('Buscando: ' + termo);
-            }
-        }
-
-        // Carregar filmes
-        async function loadMovies() {
+        // ==========================================
+        // CARREGAR FILMES DO TMDB
+        // ==========================================
+        async function loadMoviesFromTMDB() {
             try {
-                // Tenta buscar do JSON online
-                const response = await fetch(API_URL);
+                const endpoints = [
+                    { key: 'popular', url: '/movie/popular' },
+                    { key: 'top_rated', url: '/movie/top_rated' },
+                    { key: 'now_playing', url: '/movie/now_playing' },
+                    { key: 'upcoming', url: '/movie/upcoming' }
+                ];
                 
-                if (!response.ok) {
-                    throw new Error('Erro na resposta');
+                for (let endpoint of endpoints) {
+                    const response = await fetch(
+                        `${TMDB_BASE_URL}${endpoint.url}?language=pt-BR&page=1`,
+                        { headers: headers }
+                    );
+                    
+                    if (!response.ok) {
+                        console.error(`Erro em ${endpoint.key}:`, response.status);
+                        continue;
+                    }
+                    
+                    const data = await response.json();
+                    moviesCache[endpoint.key] = data.results || [];
                 }
+
+                renderAllMovies();
+                setupCarousel();
                 
-                const filmes = await response.json();
-                displayMovies(filmes);
+                // Esconde loading
+                document.getElementById('loading').classList.add('hidden');
                 
-            } catch (erro) {
-                console.log('Erro ao carregar JSON online:', erro);
-                console.log('Usando dados fallback...');
-                
-                // Usa dados locais se falhar
-                displayMovies(FILMES_FALLBACK);
+            } catch (error) {
+                console.error('Erro TMDB:', error);
+                useDemoData();
             }
         }
 
-        // Exibir filmes nas listas
-        function displayMovies(filmes) {
-            const trendingList = document.getElementById('trendingList');
-            const popularList = document.getElementById('popularList');
+        // ==========================================
+        // DADOS DE DEMONSTRAÇÃO (fallback)
+        // ==========================================
+        function useDemoData() {
+            const demoMovies = [
+                { id: 1, title: "Duna: Parte 2", poster_path: "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", backdrop_path: "/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg", vote_average: 8.2, release_date: "2024", overview: "Paul Atreides se une aos Fremen..." },
+                { id: 2, title: "Deadpool & Wolverine", poster_path: "/8cdWjvZQUExUUTzyp4t6ESMHiRM.jpg", backdrop_path: "/yDHYTfA3R0jFYba16jBB1ef8oIt.jpg", vote_average: 7.9, release_date: "2024", overview: "Wolverine está se recuperando..." },
+                { id: 3, title: "Divertida Mente 2", poster_path: "/9gLhu8UFPZfH2Hv11JdKA.jpg", backdrop_path: "/stKGOm8UyhuLPR9sZLjs5A2nAeI.jpg", vote_average: 7.6, release_date: "2024", overview: "Riley agora é adolescente..." },
+                { id: 4, title: "Furiosa", poster_path: "/iADOJ8Zymht2vPMh2rBFDqn5f2.jpg", backdrop_path: "/wNAhuOZ3Zf84jCIlrcI6RxhOwv7.jpg", vote_average: 7.7, release_date: "2024", overview: "A jovem Furiosa é raptada..." },
+                { id: 5, title: "Godzilla x Kong", poster_path: "/tMefBSflR6PGQLv7WvFPpKLZkyk.jpg", backdrop_path: "/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg", vote_average: 7.2, release_date: "2024", overview: "Godzilla e Kong se unem..." },
+                { id: 6, title: "Bad Boys 4", poster_path: "/yF1eOka9vImII76FhBzL9n1n8v.jpg", backdrop_path: "/9gLhu8UFPZfH2Hv11JdKA.jpg", vote_average: 7.0, release_date: "2024", overview: "Os detetives Mike e Marcus..." },
+                { id: 7, title: "Planeta dos Macacos", poster_path: "/gKkl37BQuKTanygYQG1pyYgLVgf.jpg", backdrop_path: "/stKGOm8UyhuLPR9sZLjs5A2nAeI.jpg", vote_average: 7.3, release_date: "2024", overview: "Muitos anos depois do reinado..." },
+                { id: 8, title: "Garfield", poster_path: "/xYduFGuch9OwbCOEUaanhmtdsW6.jpg", backdrop_path: "/wNAhuOZ3Zf84jCIlrcI6RxhOwv7.jpg", vote_average: 6.5, release_date: "2024", overview: "Garfield se reúne com seu pai..." },
+                { id: 9, title: "Um Lugar Silencioso", poster_path: "/9gLhu8UFPZfH2Hv11JdKA.jpg", backdrop_path: "/yOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg", vote_average: 7.1, release_date: "2024", overview: "A jovem Sam deve enfrentar..." },
+                { id: 10, title: "Twisters", poster_path: "/pZ8SS4J8p1E8W5P9k3k3k3k3.jpg", backdrop_path: "/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg", vote_average: 7.4, release_date: "2024", overview: "Kate Carter é uma ex-caçadora..." }
+            ];
+
+            moviesCache.popular = demoMovies;
+            moviesCache.top_rated = demoMovies.slice().reverse();
+            moviesCache.now_playing = demoMovies.slice(2, 8);
+            moviesCache.upcoming = demoMovies.slice(5, 10);
+
+            renderAllMovies();
+            setupCarousel();
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // ==========================================
+        // RENDERIZAR FILMES
+        // ==========================================
+        function renderAllMovies() {
+            renderMovieRow('populares', moviesCache.popular);
+            renderMovieRow('baixados', moviesCache.top_rated);
+            renderMovieRow('cartaz', moviesCache.now_playing);
+            renderMovieRow('lancamentos', moviesCache.upcoming);
+        }
+
+        function renderMovieRow(elementId, movies) {
+            const container = document.getElementById(elementId);
+            if (!movies || movies.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; color: #666;">Nenhum filme encontrado</div>';
+                return;
+            }
+
+            container.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="showMovieDetails(${movie.id})">
+                    <div class="rating">⭐ ${movie.vote_average?.toFixed(1) || '0.0'}</div>
+                    <img src="${movie.poster_path ? TMDB_IMG_URL + movie.poster_path : 'https://via.placeholder.com/110x165/222/00d4ff?text=' + (movie.title ? movie.title[0] : 'X')}" 
+                         alt="${movie.title || 'Filme'}"
+                         onerror="this.src='https://via.placeholder.com/110x165/222/00d4ff?text=${movie.title ? movie.title[0] : 'X'}'">
+                    <div class="title">${movie.title || 'Sem título'}</div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // CAROUSEL DESTAQUE
+        // ==========================================
+        function setupCarousel() {
+            const carousel = document.getElementById('carousel');
+            const movies = moviesCache.popular.slice(0, 5);
             
-            // Divide os filmes entre as duas seções
-            const metade = Math.ceil(filmes.length / 2);
-            const trendingFilmes = filmes.slice(0, metade);
-            const popularFilmes = filmes.slice(metade);
+            if (movies.length === 0) return;
             
-            // Preenche Trending
-            trendingList.innerHTML = trendingFilmes.map(createMovieCard).join('');
+            // Cria slides
+            movies.forEach((movie, index) => {
+                const slide = document.createElement('div');
+                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                
+                const bgImage = movie.backdrop_path 
+                    ? TMDB_BACKDROP_URL + movie.backdrop_path 
+                    : (movie.poster_path ? TMDB_IMG_URL + movie.poster_path : '');
+                
+                slide.style.backgroundImage = `url(${bgImage})`;
+                
+                slide.innerHTML = `
+                    <div class="carousel-overlay"></div>
+                    <div class="carousel-info">
+                        <h2>${movie.title || 'Filme'}</h2>
+                        <div class="meta">
+                            <span>⭐ ${movie.vote_average?.toFixed(1) || '0.0'}</span>
+                            <span>${movie.release_date ? movie.release_date.split('-')[0] : '2024'}</span>
+                        </div>
+                        <div class="overview">${movie.overview ? movie.overview.substring(0, 100) + '...' : 'Sem sinopse disponível.'}</div>
+                    </div>
+                `;
+                
+                carousel.insertBefore(slide, document.getElementById('carousel-dots'));
+            });
+
+            // Cria dots
+            const dotsContainer = document.getElementById('carousel-dots');
+            dotsContainer.innerHTML = movies.map((_, i) => 
+                `<div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`
+            ).join('');
+
+            // Auto-play
+            setInterval(nextSlide, 4000);
+        }
+
+        let currentSlide = 0;
+        function goToSlide(n) {
+            const slides = document.querySelectorAll('.carousel-slide');
+            const dots = document.querySelectorAll('.dot');
             
-            // Preenche Popular (ou repete se poucos filmes)
-            if (popularFilmes.length > 0) {
-                popularList.innerHTML = popularFilmes.map(createMovieCard).join('');
-            } else {
-                popularList.innerHTML = filmes.map(createMovieCard).join('');
+            if (slides.length === 0) return;
+            
+            slides[currentSlide]?.classList.remove('active');
+            dots[currentSlide]?.classList.remove('active');
+            
+            currentSlide = n;
+            
+            slides[currentSlide]?.classList.add('active');
+            dots[currentSlide]?.classList.add('active');
+        }
+
+        function nextSlide() {
+            const slides = document.querySelectorAll('.carousel-slide');
+            if (slides.length > 0) {
+                goToSlide((currentSlide + 1) % slides.length);
             }
         }
 
-        // Inicia quando a página carrega
-        document.addEventListener('DOMContentLoaded', loadMovies);
+        // ==========================================
+        // NAVEGAÇÃO
+        // ==========================================
+        function showPage(page, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`page-${page}`).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // ==========================================
+        // BUSCA
+        // ==========================================
+        async function searchMovies() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            try {
+                document.getElementById('loading').classList.remove('hidden');
+                
+                const response = await fetch(
+                    `${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=pt-BR&page=1`,
+                    { headers: headers }
+                );
+                
+                if (!response.ok) throw new Error('Erro na busca');
+                
+                const data = await response.json();
+                
+                // Mostra resultados na seção populares temporariamente
+                renderMovieRow('populares', data.results || []);
+                
+                document.getElementById('loading').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Erro busca:', error);
+                alert('Erro na busca. Usando dados locais.');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        // Enter na busca
+        document.getElementById('searchInput')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchMovies();
+        });
+
+        // ==========================================
+        // DETALHES DO FILME
+        // ==========================================
+        function showMovieDetails(movieId) {
+            const allMovies = [...moviesCache.popular, ...moviesCache.top_rated, ...moviesCache.now_playing, ...moviesCache.upcoming];
+            const movie = allMovies.find(m => m.id === movieId);
+            
+            if (movie) {
+                alert(`🎬 ${movie.title || 'Filme'}\n\n⭐ Avaliação: ${movie.vote_average || 'N/A'}\n📅 Lançamento: ${movie.release_date || 'N/A'}\n\n${movie.overview ? movie.overview.substring(0, 150) + '...' : 'Sem sinopse.'}`);
+            }
+        }
+
+        // ==========================================
+        // CATEGORIAS
+        // ==========================================
+        async function filterCategory(genreId, element) {
+            document.querySelectorAll('.cat-item').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+
+            if (genreId === 'all') {
+                renderAllMovies();
+                return;
+            }
+
+            try {
+                document.getElementById('loading').classList.remove('hidden');
+                
+                const response = await fetch(
+                    `${TMDB_BASE_URL}/discover/movie?with_genres=${genreId}&language=pt-BR&page=1`,
+                    { headers: headers }
+                );
+                
+                if (!response.ok) throw new Error('Erro no filtro');
+                
+                const data = await response.json();
+                renderMovieRow('populares', data.results || []);
+                
+                document.getElementById('loading').classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Erro filtro:', error);
+                alert('Erro ao filtrar. Tente novamente.');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        }
+
+        function loadMore(type) {
+            alert(`Carregar mais filmes: ${type}\n\nNa versão completa, isso carregaria a página 2 da API.`);
+        }
+
+        // ==========================================
+        // DOWNLOADS FUNCTIONS
+        // ==========================================
+        function toggleOptions(btn) {
+            const menu = btn.closest('.download-item').querySelector('.options-menu');
+            document.querySelectorAll('.options-menu').forEach(m => {
+                if(m !== menu) m.classList.remove('show');
+            });
+            menu.classList.toggle('show');
+        }
+
+        function deleteDownload(el) {
+            el.closest('.download-item').remove();
+        }
+
+        function cancelDownload(el) {
+            alert('Download cancelado!');
+            el.closest('.options-menu').classList.remove('show');
+        }
+
+        function helpDownload(el) {
+            alert('Ajuda: Verifique sua conexão WiFi');
+            el.closest('.options-menu').classList.remove('show');
+        }
+
+        function switchTab(tab, type) {
+            document.querySelectorAll('.storage-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        }
+
+        // Fecha menus ao clicar fora
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.download-item')) {
+                document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('show'));
+            }
+        });
+
+        // ==========================================
+        // INICIAR
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', loadMoviesFromTMDB);
     </script>
 
 </body>
