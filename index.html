@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRM Pro Max</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+    <style>
+        :root { --bg: #000; --accent: #00f2ff; --card: #111; --gray: #888; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+
+        /* ===== HEADER ===== */
+        header { position: fixed; top: 0; width: 100%; z-index: 1000; display: flex; align-items: center; padding: 10px 15px; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); backdrop-filter: blur(5px); }
+        .logo-img { height: 42px; margin-right: 12px; filter: drop-shadow(0 0 5px var(--accent)); }
+        .search-box { flex: 1; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 7px 15px; display: flex; align-items: center; }
+        .search-box input { background: none; border: none; color: white; width: 100%; outline: none; }
+
+        /* ===== PAGES ===== */
+        .page { display: none; animation: fadeIn 0.4s; }
+        .page.active { display: block; }
+
+        /* ===== HOME ===== */
+        .hero { width: 100%; height: 500px; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding: 40px 20px; transition: background-image 0.8s; }
+        .info-box { background: rgba(0,0,0,0.4); backdrop-filter: blur(10px); padding: 15px; border-radius: 4px; border-left: 3px solid var(--accent); }
+        .cat-title { padding: 20px 15px 5px; color: var(--accent); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .cat-title span { color: var(--gray); font-size: 11px; font-weight: normal; }
+        .scroll-row { display: flex; overflow-x: auto; gap: 10px; padding: 0 15px 10px; }
+        .scroll-row::-webkit-scrollbar { display: none; }
+        .movie-card {
+            min-width: 115px; height: 165px;
+            background: var(--card);
+            border-radius: 8px; border: 1px solid #222;
+            flex-shrink: 0; position: relative;
+            background-size: cover; background-position: center;
+            cursor: pointer; overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .movie-card:active { transform: scale(0.95); }
+        .movie-card .card-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+            padding: 8px 6px 5px;
+        }
+        .movie-card .card-title { font-size: 9px; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .movie-card .card-rating { font-size: 8px; color: var(--accent); }
+        .card-skeleton {
+            min-width: 115px; height: 165px;
+            background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px; flex-shrink: 0;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* ===== DOWNLOADS PAGE ===== */
+        .profile-box { display: flex; align-items: center; padding: 80px 20px 20px; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; background: #222; margin-right: 15px; border: 2px solid var(--accent); }
+        .premium-card { background: #0f0f0f; margin: 0 15px; padding: 15px; border-radius: 12px; border: 1px solid #1a1a1a; }
+        .dl-item { background: #080808; margin: 15px; padding: 15px; border-radius: 10px; border: 1px solid #1a1a1a; }
+        .progress-bar { height: 4px; background: #222; width: 100%; margin: 10px 0; border-radius: 2px; }
+        .progress-fill { height: 100%; background: var(--accent); width: 12%; box-shadow: 0 0 8px var(--accent); }
+        .folder-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 15px; }
+        .folder-item { background: #111; padding: 15px; border-radius: 8px; text-align: center; font-size: 11px; border: 1px solid #222; cursor: pointer; }
+        .folder-item:active { transform: scale(0.95); }
+
+        /* ===== ME PAGE ===== */
+        .me-list { padding: 20px; line-height: 3; }
+        .me-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #111; }
+        .switch { width: 40px; height: 20px; background: var(--accent); border-radius: 10px; position: relative; }
+        .switch::after { content: ''; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; }
+
+        /* ===== PLAYER ===== */
+        #player { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column; }
+        .video-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        .controls { padding: 25px; background: #0a0a0a; border-radius: 20px 20px 0 0; }
+
+        /* ===== NAVBAR ===== */
+        nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; z-index: 2000; }
+        .nav-link { text-align: center; font-size: 10px; color: #555; cursor: pointer; }
+        .nav-link.active { color: var(--accent); }
+        .nav-link i { font-size: 22px; display: block; margin-bottom: 4px; }
+
+        /* ===== PASTAS ===== */
+        .folder-view { display: none; padding: 80px 15px 20px; }
+        .folder-view.active { display: block; }
+        .folder-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 20px; position: fixed; top: 70px; left: 0; right: 0; background: var(--bg); z-index: 100; }
+        .folder-header i { margin-right: 15px; color: var(--accent); cursor: pointer; }
+        .file-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 60px 10px 20px; }
+        .file-item { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #222; position: relative; cursor: pointer; transition: transform 0.2s; }
+        .file-item:active { transform: scale(0.95); }
+        .file-thumb { width: 100%; height: 140px; background: #222; display: flex; align-items: center; justify-content: center; position: relative; }
+        .file-thumb.video { background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); }
+        .file-thumb.video::after { content: '\f04b'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 40px; color: var(--accent); opacity: 0.8; position: absolute; }
+        .file-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .file-info { padding: 10px; }
+        .file-name { color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; margin-bottom: 5px; }
+        .file-meta { color: var(--gray); font-size: 10px; display: flex; justify-content: space-between; }
+        .local-file-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 60px 15px 20px; }
+        .local-file-item { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #222; cursor: pointer; position: relative; }
+        .local-file-thumb { width: 100%; height: 100px; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); display: flex; align-items: center; justify-content: center; position: relative; }
+        .local-file-thumb::after { content: '\f04b'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 30px; color: var(--accent); opacity: 0.6; }
+        .local-file-info { padding: 10px; }
+        .local-file-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+        .local-file-meta { font-size: 10px; color: var(--gray); display: flex; justify-content: space-between; }
+        .transfer-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #000; padding: 3px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; z-index: 10; }
+        .transfer-badge.received { background: #00ff88; }
+        .transfer-badge.sent { background: #ffaa00; }
+        .scanning { text-align: center; padding: 40px; color: var(--gray); }
+        .scanning i { font-size: 40px; color: var(--accent); animation: pulse 1.5s infinite; }
+
+        /* ===== PREMIUM PAGE ===== */
+        #p-premium { padding-bottom: 100px; }
+        .premium-header {
+            position: relative;
+            height: 220px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        .premium-header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center top, rgba(0,242,255,0.15) 0%, transparent 70%);
+        }
+        .premium-crown {
+            font-size: 52px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px #ffd700);
+        }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .premium-title-text {
+            font-size: 22px; font-weight: 900;
+            background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin: 8px 0 4px;
+        }
+        .premium-subtitle { font-size: 12px; color: var(--gray); }
+
+        /* Stars display */
+        .stars-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #111; margin: 15px; padding: 15px 18px;
+            border-radius: 14px; border: 1px solid #1e1e1e;
+        }
+        .stars-left { display: flex; align-items: center; gap: 10px; }
+        .stars-icon { font-size: 28px; }
+        .stars-count { font-size: 24px; font-weight: bold; color: #ffd700; }
+        .stars-label { font-size: 11px; color: var(--gray); }
+        .stars-btn {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000; border: none; padding: 8px 16px;
+            border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
+        }
+
+        /* Current plan badge */
+        .current-plan-bar {
+            margin: 0 15px 15px;
+            background: linear-gradient(135deg, #111 0%, #0d0d0d 100%);
+            border: 1px solid #222; border-radius: 12px;
+            padding: 12px 15px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .plan-badge {
+            background: #1a1a1a; padding: 4px 10px;
+            border-radius: 8px; font-size: 11px; color: var(--gray);
+            border: 1px solid #333;
+        }
+        .plan-badge.free { border-color: #444; color: #aaa; }
+        .plan-badge.vip { border-color: #ffd700; color: #ffd700; }
+        .upgrade-hint { font-size: 11px; color: var(--accent); }
+
+        /* Plans container */
+        .plans-section { padding: 0 15px; }
+        .plans-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; }
+        .plans-toggle {
+            display: flex; background: #111; border-radius: 25px;
+            padding: 4px; margin-bottom: 15px;
+        }
+        .plan-toggle-btn {
+            flex: 1; padding: 8px; text-align: center;
+            border-radius: 20px; font-size: 12px; cursor: pointer;
+            color: var(--gray); transition: all 0.3s;
+        }
+        .plan-toggle-btn.active {
+            background: linear-gradient(135deg, #00f2ff22, #00f2ff11);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        /* Plan cards */
+        .plan-cards { display: flex; gap: 12px; margin-bottom: 20px; }
+        .plan-card {
+            flex: 1; background: #111;
+            border: 2px solid #222; border-radius: 16px;
+            padding: 18px 14px; text-align: center;
+            position: relative; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .plan-card.recommended {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #001a1f 0%, #002025 100%);
+        }
+        .plan-card.gold { border-color: #ffd700; background: linear-gradient(135deg, #1a1500 0%, #201a00 100%); }
+        .recommend-badge {
+            position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+            background: var(--accent); color: #000;
+            padding: 3px 14px; border-radius: 0 0 10px 10px;
+            font-size: 9px; font-weight: bold; white-space: nowrap;
+        }
+        .gold-badge {
+            position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+            background: #ffd700; color: #000;
+            padding: 3px 14px; border-radius: 0 0 10px 10px;
+            font-size: 9px; font-weight: bold; white-space: nowrap;
+        }
+        .plan-icon { font-size: 28px; margin-bottom: 8px; }
+        .plan-name { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+        .plan-name.cyan { color: var(--accent); }
+        .plan-name.gold-text { color: #ffd700; }
+        .plan-price { font-size: 22px; font-weight: 900; color: white; }
+        .plan-period { font-size: 10px; color: var(--gray); margin-bottom: 10px; }
+        .plan-save { font-size: 10px; color: #00ff88; margin-bottom: 8px; }
+        .plan-subscribe-btn {
+            width: 100%; padding: 10px;
+            border: none; border-radius: 25px;
+            font-weight: bold; font-size: 13px;
+            cursor: pointer; margin-top: 8px;
+            transition: transform 0.2s;
+        }
+        .plan-subscribe-btn:active { transform: scale(0.97); }
+        .plan-subscribe-btn.cyan-btn { background: linear-gradient(135deg, #00c6d4, #00f2ff); color: #000; }
+        .plan-subscribe-btn.gold-btn { background: linear-gradient(135deg, #ffaa00, #ffd700); color: #000; }
+        .plan-subscribe-btn.free-btn { background: #222; color: var(--gray); border: 1px solid #333; }
+
+        /* Benefits */
+        .benefits-section { margin: 15px; background: #0a0a0a; border-radius: 16px; border: 1px solid #1a1a1a; overflow: hidden; }
+        .benefits-title { padding: 15px 18px 10px; font-size: 14px; font-weight: bold; border-bottom: 1px solid #1a1a1a; }
+        .benefit-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 18px; border-bottom: 1px solid #0f0f0f;
+        }
+        .benefit-left { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .benefit-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .benefit-icon.blue { background: rgba(0,242,255,0.1); }
+        .benefit-icon.gold-i { background: rgba(255,215,0,0.1); }
+        .benefit-icon.green { background: rgba(0,255,136,0.1); }
+        .benefit-icon.purple { background: rgba(180,0,255,0.1); }
+        .benefit-right { display: flex; gap: 8px; }
+        .check-free { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .check-free.yes { background: rgba(0,242,255,0.15); color: var(--accent); }
+        .check-free.no { background: #1a1a1a; color: #444; }
+        .check-vip { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+        .check-vip.yes { background: rgba(255,215,0,0.15); color: #ffd700; }
+        .header-labels { display: flex; justify-content: flex-end; gap: 8px; padding: 0 18px 6px; }
+        .header-label { width: 22px; text-align: center; font-size: 9px; color: var(--gray); }
+
+        /* Checkin */
+        .checkin-section { margin: 15px; background: #0a0a0a; border-radius: 16px; border: 1px solid #1a1a1a; }
+        .checkin-title { padding: 15px 18px 10px; font-size: 14px; font-weight: bold; }
+        .checkin-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; padding: 0 15px 15px; }
+        .day-box {
+            background: #111; border-radius: 8px; padding: 8px 4px;
+            text-align: center; border: 1px solid #222; position: relative;
+        }
+        .day-box.done { background: rgba(0,242,255,0.1); border-color: var(--accent); }
+        .day-box.today { background: linear-gradient(135deg, #00c6d4, #00f2ff); border-color: var(--accent); }
+        .day-num { font-size: 9px; color: var(--gray); }
+        .day-reward { font-size: 14px; margin: 2px 0; }
+        .day-pts { font-size: 8px; color: var(--accent); }
+        .day-box.today .day-num, .day-box.today .day-pts { color: #000; }
+        .checkin-btn {
+            margin: 0 15px 15px; width: calc(100% - 30px);
+            background: linear-gradient(135deg, #00c6d4, #00f2ff);
+            border: none; border-radius: 25px; padding: 13px;
+            font-size: 15px; font-weight: bold; color: #000; cursor: pointer;
+        }
+        .checkin-btn:disabled { background: #222; color: #555; }
+
+        /* Watch tasks */
+        .watch-tasks { margin: 0 15px 15px; }
+        .task-item {
+            background: #0a0a0a; border: 1px solid #1a1a1a;
+            border-radius: 12px; padding: 12px 15px; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .task-info { flex: 1; }
+        .task-title { font-size: 13px; margin-bottom: 3px; }
+        .task-prog { font-size: 10px; color: var(--gray); }
+        .task-mini-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 5px; width: 120px; }
+        .task-mini-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+        .task-reward { background: #1a1a1a; border: 1px solid #333; padding: 5px 10px; border-radius: 10px; font-size: 11px; color: #ffd700; white-space: nowrap; margin-left: 10px; }
+
+        /* Modal Premium */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 5000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #111; border-radius: 20px;
+            border: 1px solid #222; padding: 30px 25px;
+            margin: 20px; text-align: center; max-width: 360px; width: 100%;
+        }
+        .modal-icon { font-size: 48px; margin-bottom: 15px; }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .modal-text { font-size: 13px; color: var(--gray); margin-bottom: 20px; line-height: 1.6; }
+        .modal-btn {
+            width: 100%; padding: 13px; border: none;
+            border-radius: 25px; font-size: 15px;
+            font-weight: bold; cursor: pointer; margin-bottom: 10px;
+        }
+        .modal-btn.primary { background: linear-gradient(135deg, #00c6d4, #00f2ff); color: #000; }
+        .modal-btn.secondary { background: #1a1a1a; color: var(--gray); border: 1px solid #333; }
+
+        /* Toast notification */
+        .toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+            background: #222; color: white; padding: 10px 20px;
+            border-radius: 25px; font-size: 13px; z-index: 9999;
+            opacity: 0; transition: all 0.3s; white-space: nowrap;
+            border: 1px solid #333;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="https://i.ibb.co/XZpqHLfz/1000007315.jpg" class="logo-img">
+    <div class="search-box">
+        <input type="text" placeholder="Procurar..." id="searchInput" onkeypress="searchOnEnter(event)">
+        <i class="fas fa-search" style="color:var(--accent)" onclick="doSearch()"></i>
+    </div>
+</header>
+
+<!-- ========================= HOME ========================= -->
+<div id="p-home" class="page active">
+    <div class="hero" id="heroSlide" onclick="openPlayerFromHero()">
+        <div class="info-box"><h2 id="hero-title">Carregando...</h2><p id="hero-desc">...</p></div>
+    </div>
+    <div id="cat-list"></div>
+</div>
+
+<!-- ========================= DOWNLOADS ========================= -->
+<div id="p-dl" class="page">
+    <div id="dl-main-view">
+        <div class="profile-box">
+            <div class="avatar" id="user-avatar" style="display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>
+            <div>
+                <b id="user-name">Soraia Manuel</b><br>
+                <small style="color:var(--accent)" id="user-plan-label">Free Plan</small>
+            </div>
+        </div>
+        <div class="premium-card">
+            <small>Obtém os teus benefícios premium</small>
+            <div style="font-size:10px; color:var(--gray)">(No ads 🍿) (720p Quality 💎) (Multi downloads 👑)</div>
+            <div style="margin-top:10px"><b>Check-in diário</b></div>
+            <div style="display:flex; gap:5px; margin:10px 0">
+                <div style="background:#222; padding:5px 10px; border-radius:4px">⭐+2</div>
+                <div style="background:#222; padding:5px 10px; border-radius:4px">⭐+2</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#1a1a1a; padding:10px; border-radius:8px">
+                <small>Watch 30min (5/30) ⭐+1</small>
+                <button style="background:var(--accent); border:none; padding:4px 10px; border-radius:4px; font-weight:bold" onclick="nav('p-premium')">Ver Premium</button>
+            </div>
+        </div>
+        <div style="padding:20px 20px 0; display:flex; justify-content:space-between"><b>Downloads (2)</b><i class="fas fa-bars"></i></div>
+        <div class="dl-item">
+            <div style="display:flex; justify-content:space-between; font-size:12px"><span>Beekeeper 360p</span><span style="color:red">No internet</span></div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--gray)"><span>92.5MB / 858.3MB</span><span style="color:var(--accent)">Pause</span></div>
+        </div>
+        <div class="folder-grid">
+            <div class="folder-item" onclick="openBRMFolder()">
+                <i class="fas fa-folder" style="font-size:24px; color:var(--accent); margin-bottom:8px; display:block;"></i>
+                1 BRM
+                <div style="font-size:9px; color:var(--gray); margin-top:5px;" id="brm-count">3 itens</div>
+            </div>
+            <div class="folder-item" onclick="openLocalFolder()">
+                <i class="fas fa-mobile-alt" style="font-size:24px; color:var(--accent); margin-bottom:8px; display:block;"></i>
+                2 Local
+                <div style="font-size:9px; color:var(--gray); margin-top:5px;" id="local-count">Escaneando...</div>
+            </div>
+            <div class="folder-item" onclick="openReceiveFolder()">
+                <i class="fas fa-share-alt" style="font-size:24px; color:var(--accent); margin-bottom:8px; display:block;"></i>
+                3 Receive
+                <div style="font-size:9px; color:var(--gray); margin-top:5px;" id="receive-count">0 transferências</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PASTA BRM -->
+    <div id="brm-folder" class="folder-view">
+        <div class="folder-header">
+            <i class="fas fa-arrow-left" onclick="backToMain()"></i>
+            <h3 style="margin:0;"><i class="fas fa-folder" style="margin-right:10px;"></i>BRM</h3>
+        </div>
+        <div class="file-grid" id="brm-content"></div>
+    </div>
+
+    <!-- PASTA LOCAL -->
+    <div id="local-folder" class="folder-view">
+        <div class="folder-header">
+            <i class="fas fa-arrow-left" onclick="backToMain()"></i>
+            <h3 style="margin:0;"><i class="fas fa-mobile-alt" style="margin-right:10px;"></i>Local</h3>
+        </div>
+        <div id="local-content"></div>
+    </div>
+
+    <!-- PASTA RECEIVE -->
+    <div id="receive-folder" class="folder-view">
+        <div class="folder-header">
+            <i class="fas fa-arrow-left" onclick="backToMain()"></i>
+            <h3 style="margin:0;"><i class="fas fa-share-alt" style="margin-right:10px;"></i>Receive</h3>
+        </div>
+        <div class="file-grid" id="receive-content"></div>
+    </div>
+</div>
+
+<!-- ========================= PREMIUM PAGE ========================= -->
+<div id="p-premium" class="page">
+
+    <!-- Header com brilho -->
+    <div class="premium-header" style="padding-top:60px;">
+        <div class="premium-crown">🏆</div>
+        <div class="premium-title-text">BRM Premium</div>
+        <div class="premium-subtitle">Desbloqueie o melhor da entretenimento</div>
+    </div>
+
+    <!-- Stars / Moedas -->
+    <div class="stars-bar">
+        <div class="stars-left">
+            <span class="stars-icon">⭐</span>
+            <div>
+                <div class="stars-count" id="stars-display">0</div>
+                <div class="stars-label">BRM Stars</div>
+            </div>
+        </div>
+        <button class="stars-btn" onclick="openCheckinModal()">✨ Ganhar Stars</button>
+    </div>
+
+    <!-- Plano atual -->
+    <div class="current-plan-bar">
+        <div>
+            <div style="font-size:13px; font-weight:bold;">Plano Atual</div>
+            <div style="font-size:11px; color:var(--gray); margin-top:2px;" id="plan-expire-text">Atualiza para aceder a mais</div>
+        </div>
+        <span class="plan-badge free" id="current-plan-badge">FREE</span>
+    </div>
+
+    <!-- Toggles mensal/anual -->
+    <div class="plans-section">
+        <div class="plans-title">Escolhe o teu plano</div>
+        <div class="plans-toggle">
+            <div class="plan-toggle-btn active" id="toggle-monthly" onclick="switchPlanPeriod('monthly')">📅 Mensal</div>
+            <div class="plan-toggle-btn" id="toggle-yearly" onclick="switchPlanPeriod('yearly')">🗓️ Anual <span style="color:#00ff88; font-size:9px;">-40%</span></div>
+        </div>
+
+        <!-- Cards de plano -->
+        <div class="plan-cards" id="plan-cards-container">
+            <!-- preenchido por JS -->
+        </div>
+    </div>
+
+    <!-- Benefícios comparativos -->
+    <div class="benefits-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 18px 0;">
+            <div class="benefits-title" style="padding:0; border:none;">Comparação de Planos</div>
+            <div style="display:flex; gap:12px;">
+                <span style="font-size:10px; color:var(--gray);">Free</span>
+                <span style="font-size:10px; color:#ffd700;">VIP</span>
+            </div>
+        </div>
+        <div id="benefits-list"></div>
+    </div>
+
+    <!-- Check-in diário -->
+    <div class="checkin-section">
+        <div class="checkin-title">📅 Check-in Diário</div>
+        <div class="checkin-days" id="checkin-grid"></div>
+        <button class="checkin-btn" id="checkin-btn" onclick="doCheckin()">✅ Check-in de Hoje</button>
+    </div>
+
+    <!-- Tarefas para ganhar stars -->
+    <div style="padding:15px 15px 5px; font-size:14px; font-weight:bold;">🎯 Missões Diárias</div>
+    <div class="watch-tasks">
+        <div class="task-item">
+            <div class="task-info">
+                <div class="task-title">🎬 Assistir 30 minutos</div>
+                <div class="task-prog" id="watch-prog-text">5 / 30 min</div>
+                <div class="task-mini-bar"><div class="task-mini-fill" id="watch-prog-bar" style="width:17%"></div></div>
+            </div>
+            <div class="task-reward">+⭐3</div>
+        </div>
+        <div class="task-item">
+            <div class="task-info">
+                <div class="task-title">🔍 Pesquisar conteúdo</div>
+                <div class="task-prog">0 / 1 pesquisa</div>
+                <div class="task-mini-bar"><div class="task-mini-fill" id="search-prog-bar" style="width:0%"></div></div>
+            </div>
+            <div class="task-reward">+⭐1</div>
+        </div>
+        <div class="task-item">
+            <div class="task-info">
+                <div class="task-title">❤️ Adicionar aos favoritos</div>
+                <div class="task-prog">0 / 1 favorito</div>
+                <div class="task-mini-bar"><div class="task-mini-fill" style="width:0%"></div></div>
+            </div>
+            <div class="task-reward">+⭐2</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================= ME ========================= -->
+<div id="p-me" class="page">
+    <div style="padding:80px 20px 10px"><h2>Configurações</h2><small>ID: 526097803</small></div>
+    <div class="me-list">
+        <div class="me-item"><span>Modo Família</span><div class="switch"></div></div>
+        <div><i class="fas fa-bookmark"></i> Minha Lista 🔖</div>
+        <div><i class="fas fa-history"></i> Histórico 👀</div>
+        <div><i class="fas fa-heart"></i> Meus Curtidos ❤️</div>
+        <div><i class="fas fa-comment"></i> Comentários</div>
+        <div style="color:var(--accent); font-weight:bold; margin-top:20px">Official Web: BRM.Ph</div>
+    </div>
+</div>
+
+<!-- ========================= PLAYER ========================= -->
+<div id="player">
+    <div style="padding:20px; display:flex; justify-content:space-between">
+        <i class="fas fa-chevron-left" onclick="closePlayer()"></i>
+        <span id="p-title">Beekeeper</span>
+        <i class="fas fa-cog"></i>
+    </div>
+    <div class="video-area">
+        <i class="fas fa-play-circle" style="font-size:60px; color:var(--accent)"></i>
+    </div>
+    <div class="controls">
+        <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+        <div style="display:flex; justify-content:space-around; margin:20px 0; font-size:20px">
+            <i class="fas fa-backward"></i><i class="fas fa-pause"></i><i class="fas fa-forward"></i>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--gray)">
+            <span>Velocidade: 1.0x</span><span>Qualidade: 720p</span><span>Legenda: PT</span>
+        </div>
+    </div>
+</div>
+
+<!-- ========================= MODAL SUBSCRIBE ========================= -->
+<div class="modal-overlay" id="subscribe-modal">
+    <div class="modal-box">
+        <div class="modal-icon">🏆</div>
+        <div class="modal-title" id="modal-plan-title">BRM VIP</div>
+        <div class="modal-text" id="modal-plan-desc">Activa o teu plano premium e desfruta de conteúdo ilimitado sem anúncios.</div>
+        <button class="modal-btn primary" onclick="confirmSubscribe()">✅ Confirmar Subscrição</button>
+        <button class="modal-btn secondary" onclick="closeModal('subscribe-modal')">Cancelar</button>
+    </div>
+</div>
+
+<!-- ========================= MODAL CHECK-IN ========================= -->
+<div class="modal-overlay" id="checkin-modal">
+    <div class="modal-box">
+        <div class="modal-icon" id="checkin-modal-icon">🎁</div>
+        <div class="modal-title" id="checkin-modal-title">Check-in Realizado!</div>
+        <div class="modal-text" id="checkin-modal-text">Ganhou ⭐2 Stars hoje!</div>
+        <button class="modal-btn primary" onclick="closeModal('checkin-modal')">Incrível! 🎉</button>
+    </div>
+</div>
+
+<!-- ========================= TOAST ========================= -->
+<div class="toast" id="toast-msg"></div>
+
+<!-- ========================= NAVBAR ========================= -->
+<nav>
+    <div class="nav-link active" onclick="nav('p-home')"><i class="fas fa-globe"></i>Home 🌐</div>
+    <div class="nav-link" onclick="nav('p-dl')"><i class="fas fa-bolt"></i>Downloads ⚡</div>
+    <div class="nav-link" onclick="nav('p-premium')"><i class="fas fa-trophy"></i>Premium 🏆</div>
+    <div class="nav-link" onclick="nav('p-me')"><i class="fas fa-user-astronaut"></i>Me 🗽</div>
+</nav>
+
+<!-- ========================= SCRIPTS ========================= -->
+<script>
+/* ============================================================
+   FIREBASE INIT
+   ============================================================ */
+const firebaseConfig = {
+    apiKey: "AIzaSyBuG5XVRDkB91QQKrFAurE2pBENADhwi8k",
+    authDomain: "brm-pro-max.firebaseapp.com",
+    projectId: "brm-pro-max",
+    storageBucket: "brm-pro-max.appspot.com",
+    messagingSenderId: "564702498531",
+    appId: "1:564702498531:web:b3cbf34e1f841f9341bfd6"
+};
+
+let db = null;
+let fbUser = { id: 'local_user_526097803', name: 'Soraia Manuel' };
+
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    console.log('✅ Firebase conectado');
+    loadUserDataFromFirebase();
+} catch(e) {
+    console.warn('Firebase offline, usando localStorage:', e);
+}
+
+async function loadUserDataFromFirebase() {
+    if (!db) return;
+    try {
+        const doc = await db.collection('users').doc(fbUser.id).get();
+        if (doc.exists) {
+            const data = doc.data();
+            userStars = data.stars || 0;
+            userPlan  = data.plan  || 'free';
+            checkinStreak = data.streak || 0;
+            lastCheckin   = data.lastCheckin || '';
+            updatePremiumUI();
+        } else {
+            await db.collection('users').doc(fbUser.id).set({
+                stars: 0, plan: 'free', streak: 0, lastCheckin: '', name: fbUser.name
+            });
+        }
+    } catch(e) { console.warn('Firestore read error:', e); }
+}
+
+async function saveUserData() {
+    const data = { stars: userStars, plan: userPlan, streak: checkinStreak, lastCheckin };
+    if (db) {
+        try { await db.collection('users').doc(fbUser.id).set(data, { merge: true }); }
+        catch(e) { console.warn('Firestore write error:', e); }
+    }
+    localStorage.setItem('brm_user_data', JSON.stringify(data));
+}
+
+/* ============================================================
+   USER STATE
+   ============================================================ */
+const savedData = JSON.parse(localStorage.getItem('brm_user_data') || '{}');
+let userStars     = savedData.stars     || 0;
+let userPlan      = savedData.plan      || 'free';
+let checkinStreak = savedData.streak    || 0;
+let lastCheckin   = savedData.lastCheckin || '';
+let selectedPeriod = 'monthly';
+let selectedPlanForModal = null;
+let heroMovies = [];
+let currentHeroIndex = 0;
+
+/* ============================================================
+   TMDB API
+   ============================================================ */
+const TMDB_KEY = '716073158c3996720f6667540209426f';
+const TMDB_BASE = 'https://api.themoviedb.org/3';
+const IMG_BASE  = 'https://image.tmdb.org/t/p/w342';
+const IMG_ORIG  = 'https://image.tmdb.org/t/p/w780';
+
+const CATEGORIES = [
+    { title: 'Filmes',       endpoint: '/movie/popular' },
+    { title: 'Séries TV',    endpoint: '/tv/popular' },
+    { title: 'Anime',        endpoint: '/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc' },
+    { title: 'D-Dorama',     endpoint: '/discover/tv?with_original_language=ja&with_genres=18&sort_by=popularity.desc' },
+    { title: 'K-Dorama',     endpoint: '/discover/tv?with_original_language=ko&sort_by=popularity.desc' },
+    { title: 'Cartoon',      endpoint: '/discover/tv?with_genres=16&sort_by=popularity.desc' },
+    { title: 'USA Movies',   endpoint: '/discover/movie?with_original_language=en&sort_by=popularity.desc' },
+    { title: 'Brazil Movies',endpoint: '/discover/movie?with_original_language=pt&sort_by=popularity.desc' },
+    { title: 'Cinema 2026',  endpoint: '/discover/movie?primary_release_year=2026&sort_by=popularity.desc' },
+    { title: 'Thriller',     endpoint: '/discover/movie?with_genres=53&sort_by=popularity.desc' },
+    { title: 'Terror',       endpoint: '/discover/movie?with_genres=27&sort_by=popularity.desc' },
+    { title: 'Músicas',      endpoint: '/discover/movie?with_genres=10402&sort_by=popularity.desc' }
+];
+
+async function fetchTMDB(endpoint) {
+    const sep = endpoint.includes('?') ? '&' : '?';
+    const url = `${TMDB_BASE}${endpoint}${sep}api_key=${TMDB_KEY}&language=pt-BR`;
+    try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.json();
+    } catch(e) {
+        console.warn('TMDB fetch error:', endpoint, e);
+        return { results: [] };
+    }
+}
+
+async function loadHero() {
+    const data = await fetchTMDB('/trending/all/day');
+    heroMovies = data.results ? data.results.filter(m => m.backdrop_path).slice(0, 6) : [];
+    if (heroMovies.length > 0) {
+        showHeroSlide(0);
+        setInterval(() => {
+            currentHeroIndex = (currentHeroIndex + 1) % heroMovies.length;
+            showHeroSlide(currentHeroIndex);
+        }, 4000);
+    }
+}
+
+function showHeroSlide(i) {
+    const m = heroMovies[i];
+    const hero = document.getElementById('heroSlide');
+    const title = m.title || m.name || 'Desconhecido';
+    const year  = (m.release_date || m.first_air_date || '2025').split('-')[0];
+    const type  = m.media_type === 'tv' ? 'Série' : 'Filme';
+    hero.style.backgroundImage = `url('${IMG_ORIG}${m.backdrop_path}')`;
+    hero.innerHTML = `<div class="info-box"><h2>${title}</h2><p>${year} · ${type} ⭐ ${m.vote_average?.toFixed(1)}</p></div>`;
+    hero.dataset.title = title;
+}
+
+function openPlayerFromHero() {
+    const hero = document.getElementById('heroSlide');
+    openPlayer(hero.dataset.title || 'BRM Player');
+}
+
+async function buildCategories() {
+    const cl = document.getElementById('cat-list');
+    cl.innerHTML = '';
+
+    for (const cat of CATEGORIES) {
+        // Criar título + row skeleton imediatamente
+        const row_id = 'row_' + cat.title.replace(/\s+/g, '_');
+        cl.innerHTML += `
+            <div class="cat-title">${cat.title} <span>Ver tudo ›</span></div>
+            <div class="scroll-row" id="${row_id}">
+                ${'<div class="card-skeleton"></div>'.repeat(6)}
+            </div>`;
+    }
+
+    // Carregar dados de todas as categorias em paralelo
+    const promises = CATEGORIES.map(cat =>
+        fetchTMDB(cat.endpoint).then(data => ({ cat, data }))
+    );
+    const results = await Promise.all(promises);
+
+    for (const { cat, data } of results) {
+        const row_id = 'row_' + cat.title.replace(/\s+/g, '_');
+        const row = document.getElementById(row_id);
+        if (!row) continue;
+
+        const movies = (data.results || []).slice(0, 10);
+        if (movies.length === 0) {
+            row.innerHTML = '<div style="color:#555; padding:10px; font-size:12px;">Sem resultados</div>';
+            continue;
+        }
+
+        row.innerHTML = movies.map(m => {
+            const title   = m.title || m.name || '';
+            const poster  = m.poster_path ? `${IMG_BASE}${m.poster_path}` : '';
+            const rating  = m.vote_average ? `⭐ ${m.vote_average.toFixed(1)}` : '';
+            return `
+                <div class="movie-card"
+                     style="${poster ? `background-image:url('${poster}')` : 'background:#1a1a1a;'}"
+                     onclick="openPlayer('${title.replace(/'/g, "\\'")}')">
+                    <div class="card-overlay">
+                        <div class="card-title">${title}</div>
+                        <div class="card-rating">${rating}</div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+}
+
+/* ============================================================
+   PREMIUM PAGE LOGIC
+   ============================================================ */
+const PLANS = {
+    monthly: [
+        {
+            id: 'vip_monthly',
+            icon: '💎',
+            name: 'BRM VIP',
+            nameClass: 'cyan',
+            price: '9,99',
+            currency: '€',
+            period: '/mês',
+            save: '',
+            recommended: true,
+            btn: 'cyan-btn',
+            btnText: 'Subscrever VIP'
+        },
+        {
+            id: 'gold_monthly',
+            icon: '👑',
+            name: 'BRM GOLD',
+            nameClass: 'gold-text',
+            price: '14,99',
+            currency: '€',
+            period: '/mês',
+            save: '',
+            recommended: false,
+            isGold: true,
+            btn: 'gold-btn',
+            btnText: 'Subscrever GOLD'
+        },
+        {
+            id: 'free',
+            icon: '🆓',
+            name: 'Grátis',
+            nameClass: '',
+            price: '0,00',
+            currency: '€',
+            period: '/sempre',
+            save: '',
+            recommended: false,
+            btn: 'free-btn',
+            btnText: 'Plano Atual'
+        }
+    ],
+    yearly: [
+        {
+            id: 'vip_yearly',
+            icon: '💎',
+            name: 'BRM VIP',
+            nameClass: 'cyan',
+            price: '71,88',
+            currency: '€',
+            period: '/ano',
+            save: 'Poupa 28€/ano',
+            recommended: true,
+            btn: 'cyan-btn',
+            btnText: 'Subscrever VIP'
+        },
+        {
+            id: 'gold_yearly',
+            icon: '👑',
+            name: 'BRM GOLD',
+            nameClass: 'gold-text',
+            price: '107,88',
+            currency: '€',
+            period: '/ano',
+            save: 'Poupa 72€/ano',
+            recommended: false,
+            isGold: true,
+            btn: 'gold-btn',
+            btnText: 'Subscrever GOLD'
+        },
+        {
+            id: 'free',
+            icon: '🆓',
+            name: 'Grátis',
+            nameClass: '',
+            price: '0,00',
+            currency: '€',
+            period: '/sempre',
+            save: '',
+            recommended: false,
+            btn: 'free-btn',
+            btnText: 'Plano Atual'
+        }
+    ]
+};
+
+const BENEFITS = [
+    { icon: '🎬', bg: 'blue',   text: 'Filmes e Séries ilimitados', free: true,  vip: true },
+    { icon: '🚫', bg: 'green',  text: 'Sem anúncios',               free: false, vip: true },
+    { icon: '⬇️', bg: 'blue',   text: 'Downloads offline',          free: false, vip: true },
+    { icon: '🖥️', bg: 'purple', text: 'Qualidade até 4K',           free: false, vip: true },
+    { icon: '📱', bg: 'blue',   text: 'Vários dispositivos',        free: false, vip: true },
+    { icon: '⏩', bg: 'gold-i', text: 'Sem limite de velocidade',   free: false, vip: true },
+    { icon: '🌍', bg: 'green',  text: 'Legendas múltiplos idiomas', free: true,  vip: true },
+    { icon: '👨‍👩‍👧', bg: 'purple', text: 'Até 4 perfis',              free: false, vip: true },
+    { icon: '🔑', bg: 'gold-i', text: 'Acesso antecipado',          free: false, vip: true }
+];
+
+const CHECKIN_REWARDS = [2, 2, 3, 3, 5, 5, 10];
+const CHECKIN_ICONS   = ['⭐','⭐','⭐','⭐','💎','💎','🎁'];
+
+function renderPlanCards() {
+    const container = document.getElementById('plan-cards-container');
+    const plans = PLANS[selectedPeriod];
+    container.innerHTML = plans.map(p => `
+        <div class="plan-card ${p.recommended ? 'recommended' : ''} ${p.isGold ? 'gold' : ''}">
+            ${p.recommended ? '<div class="recommend-badge">✨ POPULAR</div>' : ''}
+            ${p.isGold ? '<div class="gold-badge">👑 MELHOR VALOR</div>' : ''}
+            <div class="plan-icon">${p.icon}</div>
+            <div class="plan-name ${p.nameClass}">${p.name}</div>
+            <div class="plan-price">${p.currency}${p.price}</div>
+            <div class="plan-period">${p.period}</div>
+            ${p.save ? `<div class="plan-save">✅ ${p.save}</div>` : '<div style="height:14px"></div>'}
+            <button class="plan-subscribe-btn ${p.btn}" onclick="openSubscribeModal('${p.id}','${p.name}','${p.currency}${p.price}${p.period}')">
+                ${p.id === 'free' && userPlan === 'free' ? '✓ Plano Atual' : p.btnText}
+            </button>
+        </div>
+    `).join('');
+}
+
+function renderBenefits() {
+    const list = document.getElementById('benefits-list');
+    list.innerHTML = BENEFITS.map(b => `
+        <div class="benefit-row">
+            <div class="benefit-left">
+                <div class="benefit-icon ${b.bg}">${b.icon}</div>
+                <span>${b.text}</span>
+            </div>
+            <div class="benefit-right">
+                <div class="check-free ${b.free ? 'yes' : 'no'}">${b.free ? '✓' : '✗'}</div>
+                <div class="check-vip yes">✓</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderCheckinGrid() {
+    const grid = document.getElementById('checkin-grid');
+    const today = new Date().getDay(); // 0=Dom...6=Sab
+    grid.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const isPast  = i < checkinStreak % 7;
+        const isToday = i === checkinStreak % 7;
+        const cls = isPast ? 'done' : isToday ? 'today' : '';
+        grid.innerHTML += `
+            <div class="day-box ${cls}">
+                <div class="day-num">Dia ${i+1}</div>
+                <div class="day-reward">${CHECKIN_ICONS[i]}</div>
+                <div class="day-pts">+${CHECKIN_REWARDS[i]}⭐</div>
+            </div>`;
+    }
+    // Atualizar botão
+    const btn = document.getElementById('checkin-btn');
+    const todayStr = new Date().toDateString();
+    if (lastCheckin === todayStr) {
+        btn.disabled = true;
+        btn.textContent = '✅ Check-in realizado hoje!';
+    } else {
+        btn.disabled = false;
+        btn.textContent = '✅ Check-in de Hoje';
+    }
+}
+
+function doCheckin() {
+    const todayStr = new Date().toDateString();
+    if (lastCheckin === todayStr) {
+        showToast('Já fizeste o check-in hoje! 😊');
+        return;
+    }
+    const reward = CHECKIN_REWARDS[checkinStreak % 7];
+    checkinStreak++;
+    lastCheckin = todayStr;
+    userStars += reward;
+    saveUserData();
+    updatePremiumUI();
+    renderCheckinGrid();
+    // Mostrar modal
+    document.getElementById('checkin-modal-icon').textContent = CHECKIN_ICONS[(checkinStreak - 1) % 7];
+    document.getElementById('checkin-modal-title').textContent = `Dia ${checkinStreak} 🎉`;
+    document.getElementById('checkin-modal-text').textContent = `Ganhaste ⭐${reward} Stars!\nTotal: ⭐${userStars} Stars`;
+    showModal('checkin-modal');
+}
+
+function openCheckinModal() {
+    const todayStr = new Date().toDateString();
+    if (lastCheckin === todayStr) {
+        showToast('Já fizeste o check-in hoje! 😊');
+    } else {
+        doCheckin();
+    }
+}
+
+function openSubscribeModal(planId, planName, priceText) {
+    if (planId === 'free') {
+        showToast('Já tens o plano gratuito ativo');
+        return;
+    }
+    selectedPlanForModal = { planId, planName, priceText };
+    document.getElementById('modal-plan-title').textContent = `🏆 ${planName}`;
+    document.getElementById('modal-plan-desc').textContent =
+        `Activa o plano ${planName} por ${priceText} e desfruta de:\n🚫 Sem anúncios\n⬇️ Downloads ilimitados\n🖥️ Qualidade 4K\n📱 Múltiplos dispositivos`;
+    showModal('subscribe-modal');
+}
+
+function confirmSubscribe() {
+    if (!selectedPlanForModal) return;
+    userPlan = selectedPlanForModal.planId;
+    saveUserData();
+    closeModal('subscribe-modal');
+    updatePremiumUI();
+    showToast(`🎉 ${selectedPlanForModal.planName} ativado com sucesso!`);
+}
+
+function switchPlanPeriod(period) {
+    selectedPeriod = period;
+    document.getElementById('toggle-monthly').classList.toggle('active', period === 'monthly');
+    document.getElementById('toggle-yearly').classList.toggle('active',  period === 'yearly');
+    renderPlanCards();
+}
+
+function updatePremiumUI() {
+    document.getElementById('stars-display').textContent = userStars;
+    const badge  = document.getElementById('current-plan-badge');
+    const expire = document.getElementById('plan-expire-text');
+    const navLabel = document.getElementById('user-plan-label');
+
+    if (userPlan === 'free') {
+        badge.textContent = 'FREE';
+        badge.className = 'plan-badge free';
+        expire.textContent = 'Atualiza para aceder a mais';
+        if (navLabel) navLabel.textContent = 'Free Plan';
+    } else if (userPlan.includes('gold')) {
+        badge.textContent = '👑 GOLD';
+        badge.className = 'plan-badge vip';
+        badge.style.borderColor = '#ffd700';
+        expire.textContent = 'Plano GOLD ativo ✨';
+        if (navLabel) navLabel.textContent = '👑 GOLD';
+    } else {
+        badge.textContent = '💎 VIP';
+        badge.className = 'plan-badge vip';
+        expire.textContent = 'Plano VIP ativo ✨';
+        if (navLabel) navLabel.textContent = '💎 VIP';
+    }
+    renderPlanCards();
+}
+
+/* ============================================================
+   DOWNLOADS / PASTAS
+   ============================================================ */
+let brmFiles = JSON.parse(localStorage.getItem('brm_files')) || [
+    {id:1, name:"The Beekeeper",      size:"858.3 MB", quality:"360p",  progress:12,  date:"2025-01-15"},
+    {id:2, name:"Solo Leveling EP1",  size:"450.2 MB", quality:"720p",  progress:100, date:"2025-01-14"},
+    {id:3, name:"Demon Slayer",        size:"1.2 GB",   quality:"1080p", progress:100, date:"2025-01-13"}
+];
+
+let localFiles = [
+    {id:'local_1', name:"VID_20250115_143022.mp4",          size:"45.2 MB",  duration:"2:34",    folder:"Camera",    date:"15/01/2025"},
+    {id:'local_2', name:"Como Treinar Seu Dragão.mp4",       size:"1.8 GB",   duration:"1:38:22", folder:"Downloads", date:"14/01/2025"},
+    {id:'local_3', name:"Show da Luna - Ep 12.mp4",          size:"280.5 MB", duration:"22:15",   folder:"WhatsApp",  date:"13/01/2025"},
+    {id:'local_4', name:"Viagem para SP.mp4",                size:"125.8 MB", duration:"5:47",    folder:"Camera",    date:"12/01/2025"},
+    {id:'local_5', name:"Aniversario_Maria.mp4",             size:"890.3 MB", duration:"45:20",   folder:"Downloads", date:"10/01/2025"},
+    {id:'local_6', name:"TikTok_Video_123.mp4",              size:"15.4 MB",  duration:"0:45",    folder:"TikTok",    date:"09/01/2025"},
+    {id:'local_7', name:"Aula de Pilates.mp4",               size:"234.1 MB", duration:"58:30",   folder:"Downloads", date:"08/01/2025"},
+    {id:'local_8', name:"Receita de Bolo.mp4",               size:"12.8 MB",  duration:"3:22",    folder:"Instagram", date:"07/01/2025"}
+];
+
+let receiveFiles = JSON.parse(localStorage.getItem('receive_files')) || [];
+
+function openBRMFolder() {
+    document.getElementById('dl-main-view').style.display = 'none';
+    document.getElementById('brm-folder').classList.add('active');
+    renderBRMFiles();
+}
+
+function renderBRMFiles() {
+    const c = document.getElementById('brm-content');
+    if (!brmFiles.length) { c.innerHTML = emptyState('fa-film','Nenhum download do app'); return; }
+    c.innerHTML = brmFiles.map(f => `
+        <div class="file-item" onclick="openPlayer('${f.name}')">
+            <div class="file-thumb video"></div>
+            <div class="file-info">
+                <div class="file-name">${f.name}</div>
+                <div class="file-meta"><span style="color:var(--accent)">${f.size}</span><span>${f.quality}</span></div>
+                ${f.progress < 100 ? `<div style="margin-top:5px;font-size:9px;color:orange;">⏸ ${f.progress}%</div>` : ''}
+            </div>
+        </div>`).join('');
+    document.getElementById('brm-count').textContent = brmFiles.length + ' itens';
+}
+
+function openLocalFolder() {
+    document.getElementById('dl-main-view').style.display = 'none';
+    document.getElementById('local-folder').classList.add('active');
+    const c = document.getElementById('local-content');
+    c.innerHTML = `
+        <div class="scanning">
+            <i class="fas fa-search"></i>
+            <p style="margin-top:15px;">Escaneando arquivos...</p>
+            <p style="font-size:11px;margin-top:10px;">/sdcard/DCIM/Camera<br>/sdcard/Download<br>/sdcard/WhatsApp/Media</p>
+        </div>`;
+    setTimeout(() => renderLocalFiles(), 1500);
+}
+
+function renderLocalFiles() {
+    const c = document.getElementById('local-content');
+    if (!localFiles.length) { c.innerHTML = emptyState('fa-folder-open','Nenhum arquivo de mídia encontrado'); return; }
+    c.innerHTML = `<div class="local-file-grid">${localFiles.map(f => `
+        <div class="local-file-item" onclick="openPlayer('${f.name}')">
+            <div class="local-file-thumb"></div>
+            <div class="local-file-info">
+                <div class="local-file-name">${f.name}</div>
+                <div class="local-file-meta"><span>${f.size}</span><span>${f.duration}</span></div>
+                <div style="font-size:9px;color:var(--gray);margin-top:3px;"><i class="fas fa-folder" style="margin-right:3px;"></i>${f.folder}</div>
+            </div>
+        </div>`).join('')}</div>`;
+    document.getElementById('local-count').textContent = localFiles.length + ' itens';
+}
+
+function openReceiveFolder() {
+    document.getElementById('dl-main-view').style.display = 'none';
+    document.getElementById('receive-folder').classList.add('active');
+    renderReceiveFiles();
+}
+
+function renderReceiveFiles() {
+    const c = document.getElementById('receive-content');
+    if (!receiveFiles.length) { c.innerHTML = emptyState('fa-share-alt','Nenhuma transferência recebida'); return; }
+    c.innerHTML = receiveFiles.map(f => `
+        <div class="file-item" onclick="openPlayer('${f.name}')">
+            <div class="file-thumb video"></div>
+            <div class="transfer-badge ${f.type}">${f.type==='received'?'RECEBIDO':'ENVIADO'}</div>
+            <div class="file-info">
+                <div class="file-name">${f.name}</div>
+                <div class="file-meta"><span style="color:var(--accent)">${f.size}</span></div>
+                <div style="font-size:9px;color:var(--gray);margin-top:3px;"><i class="fas fa-user" style="margin-right:3px;"></i>${f.from}</div>
+                <div style="font-size:9px;color:var(--gray);">${f.date}</div>
+            </div>
+        </div>`).join('');
+    document.getElementById('receive-count').textContent = receiveFiles.length + ' transferências';
+}
+
+function emptyState(icon, text) {
+    return `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--gray);">
+        <i class="fas ${icon}" style="font-size:48px;margin-bottom:15px;opacity:0.3;"></i><p>${text}</p></div>`;
+}
+
+function backToMain() {
+    document.querySelectorAll('.folder-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('dl-main-view').style.display = 'block';
+}
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+function searchOnEnter(e) {
+    if (e.key === 'Enter') doSearch();
+}
+async function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    // Mark search task done
+    document.getElementById('search-prog-bar').style.width = '100%';
+    // Award star
+    userStars += 1;
+    saveUserData();
+    updatePremiumUI();
+    showToast(`🔍 Pesquisando "${q}"...`);
+    const data = await fetchTMDB(`/search/multi?query=${encodeURIComponent(q)}`);
+    if (data.results && data.results.length > 0) {
+        const first = data.results[0];
+        showToast(`✅ ${data.results.length} resultados para "${q}"`);
+    } else {
+        showToast('Sem resultados encontrados');
+    }
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function nav(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    // Ativar nav link correto
+    const navMap = { 'p-home': 0, 'p-dl': 1, 'p-premium': 2, 'p-me': 3 };
+    const links = document.querySelectorAll('.nav-link');
+    if (navMap[id] !== undefined) links[navMap[id]].classList.add('active');
+    // Atualizar premium ao entrar
+    if (id === 'p-premium') {
+        updatePremiumUI();
+        renderBenefits();
+        renderCheckinGrid();
+    }
+}
+
+function openPlayer(t) {
+    document.getElementById('p-title').innerText = t || 'BRM Player';
+    document.getElementById('player').style.display = 'flex';
+}
+function closePlayer() {
+    document.getElementById('player').style.display = 'none';
+}
+
+/* ============================================================
+   MODALS & TOAST
+   ============================================================ */
+function showModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+let toastTimer = null;
+function showToast(msg) {
+    const t = document.getElementById('toast-msg');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+window.onload = async function () {
+    // Inicializar contadores
+    document.getElementById('brm-count').textContent     = brmFiles.length + ' itens';
+    document.getElementById('local-count').textContent   = localFiles.length + ' itens';
+    document.getElementById('receive-count').textContent = receiveFiles.length + ' transferências';
+
+    // Premium UI inicial
+    updatePremiumUI();
+    renderBenefits();
+    renderCheckinGrid();
+
+    // Carregar TMDB
+    await Promise.all([
+        loadHero(),
+        buildCategories()
+    ]);
+};
+</script>
+</body>
+</html>
